@@ -23,12 +23,12 @@
       },
     },
     validators: [{
-      coins: '1000000000000000000stake,10000000000000000000000aevmos',
-      staked: '1000000000000000000stake',
+      coins: '10000000000000000000000aevmos',
+      staked: '1000000000000000000aevmos',
       mnemonic: '${VALIDATOR1_MNEMONIC}',
     }, {
-      coins: '1000000000000000000stake,10000000000000000000000aevmos',
-      staked: '1000000000000000000stake',
+      coins: '10000000000000000000000aevmos',
+      staked: '1000000000000000000aevmos',
       mnemonic: '${VALIDATOR2_MNEMONIC}',
     }],
     accounts: [{
@@ -69,6 +69,21 @@
                 amount: '1',
               },
             ],
+          },
+        },
+        staking: {
+          params: {
+            bond_denom: 'aevmos',
+          }
+        },
+        crisis: {
+          constant_fee: {
+            denom: 'aevmos',
+          },
+        },
+        inflation: {
+          params: {
+            mint_denom: 'aevmos',
           },
         },
         transfer: {
