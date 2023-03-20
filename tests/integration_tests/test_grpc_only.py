@@ -43,7 +43,7 @@ def grpc_eth_call(port: int, args: dict, chain_id=None, proposer_address=None):
     if proposer_address is not None:
         params["proposer_address"] = str(proposer_address)
     return requests.get(
-        f"http://localhost:{port}/ethermint/evm/v1/eth_call", params
+        f"http://localhost:{port}/evmos/evm/v1/eth_call", params
     ).json()
 
 
@@ -78,14 +78,14 @@ def test_grpc_mode(custom_evmos):
     for i in range(2):
         wait_for_block(custom_evmos.cosmos_cli(i), 1)
     supervisorctl(
-        custom_evmos.base_dir / "../tasks.ini", "stop", "ethermint_9000-1-node1"
+        custom_evmos.base_dir / "../tasks.ini", "stop", "evmos_9000-1-node1"
     )
 
     # run grpc-only mode directly with existing chain state
     with (custom_evmos.base_dir / "node1.log").open("a") as logfile:
         proc = subprocess.Popen(
             [
-                "ethermintd",
+                "evmosd",
                 "start",
                 "--grpc-only",
                 "--home",

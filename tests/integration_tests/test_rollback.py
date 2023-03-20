@@ -15,7 +15,7 @@ def update_node_cmd(path, cmd, i):
     ini = configparser.RawConfigParser()
     ini.read(ini_path)
     for section in ini.sections():
-        if section == f"program:ethermint_9000-1-node{i}":
+        if section == f"program:evmos_9000-1-node{i}":
             ini[section].update(
                 {
                     "command": f"{cmd} start --home %(here)s/node{i}",
@@ -28,7 +28,7 @@ def update_node_cmd(path, cmd, i):
 
 def post_init(broken_binary):
     def inner(path, base_port, config):
-        chain_id = "ethermint_9000-1"
+        chain_id = "evmos_9000-1"
         update_node_cmd(path / chain_id, broken_binary, 1)
 
     return inner
@@ -41,11 +41,11 @@ def custom_evmos(tmp_path_factory):
     cmd = [
         "nix-build",
         "--no-out-link",
-        Path(__file__).parent / "configs/broken-ethermintd.nix",
+        Path(__file__).parent / "configs/broken-evmosd.nix",
     ]
     print(*cmd)
     broken_binary = (
-        Path(subprocess.check_output(cmd).strip().decode()) / "bin/ethermintd"
+        Path(subprocess.check_output(cmd).strip().decode()) / "bin/evmosd"
     )
     print(broken_binary)
 
@@ -83,14 +83,14 @@ def test_rollback(custom_evmos):
 
     print("stop node1")
     supervisorctl(
-        custom_evmos.base_dir / "../tasks.ini", "stop", "ethermint_9000-1-node1"
+        custom_evmos.base_dir / "../tasks.ini", "stop", "evmos_9000-1-node1"
     )
 
     print("do rollback on node1")
     cli1.rollback()
 
     print("switch to normal binary")
-    update_node_cmd(custom_evmos.base_dir, "ethermintd", 1)
+    update_node_cmd(custom_evmos.base_dir, "evmosd", 1)
     supervisorctl(custom_evmos.base_dir / "../tasks.ini", "update")
     wait_for_port(target_port)
 

@@ -23,7 +23,7 @@ def custom_evmos(tmp_path_factory):
 
 
 @pytest.fixture(scope="module")
-def ethermint_indexer(tmp_path_factory):
+def evmos_indexer(tmp_path_factory):
     path = tmp_path_factory.mktemp("indexer")
     yield from setup_custom_evmos(
         path, 26660, Path(__file__).parent / "configs/enable-indexer.jsonnet"
@@ -31,23 +31,23 @@ def ethermint_indexer(tmp_path_factory):
 
 
 @pytest.fixture(
-    scope="module", params=["ethermint", "geth", "ethermint-ws", "enable-indexer"]
+    scope="module", params=["evmos", "geth", "evmos-ws", "enable-indexer"]
 )
-def cluster(request, custom_evmos, ethermint_indexer, geth):
+def cluster(request, custom_evmos, evmos_indexer, geth):
     """
-    run on both ethermint and geth
+    run on both evmos and geth
     """
     provider = request.param
-    if provider == "ethermint":
+    if provider == "evmos":
         yield custom_evmos
     elif provider == "geth":
         yield geth
-    elif provider == "ethermint-ws":
-        ethermint_ws = custom_evmos.copy()
-        ethermint_ws.use_websocket()
-        yield ethermint_ws
+    elif provider == "evmos-ws":
+        evmos_ws = custom_evmos.copy()
+        evmos_ws.use_websocket()
+        yield evmos_ws
     elif provider == "enable-indexer":
-        yield ethermint_indexer
+        yield evmos_indexer
     else:
         raise NotImplementedError
 

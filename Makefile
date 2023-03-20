@@ -98,7 +98,7 @@ endif
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
-BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+BUILD_FLAGS := -tags "$(build_tags)"
 # check for nostrip option
 ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
@@ -306,6 +306,9 @@ $(TEST_TARGETS): run-tests
 
 test-unit-cover: ARGS=-timeout=15m -race -coverprofile=coverage.txt -covermode=atomic
 test-unit-cover: TEST_PACKAGES=$(PACKAGES_UNIT)
+
+run-integration-tests:
+	@nix-shell ./tests/integration_tests/shell.nix --run ./scripts/run-integration-tests.sh
 
 test-e2e:
 	@if [ -z "$(TARGET_VERSION)" ]; then \

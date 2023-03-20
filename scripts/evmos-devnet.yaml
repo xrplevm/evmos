@@ -1,5 +1,5 @@
 dotenv: .env
-ethermint_9000-1:
+evmos_9000-1:
   cmd: evmosd
   start-flags: "--trace"
   app-config:

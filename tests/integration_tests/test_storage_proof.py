@@ -10,13 +10,13 @@ def custom_evmos(tmp_path_factory):
     yield from setup_evmos(path, 26800, long_timeout_commit=True)
 
 
-@pytest.fixture(scope="module", params=["ethermint", "geth"])
+@pytest.fixture(scope="module", params=["evmos", "geth"])
 def cluster(request, custom_evmos, geth):
     """
-    run on both ethermint and geth
+    run on both evmos and geth
     """
     provider = request.param
-    if provider == "ethermint":
+    if provider == "evmos":
         yield custom_evmos
     elif provider == "geth":
         yield geth
