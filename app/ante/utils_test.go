@@ -1,7 +1,6 @@
 package ante_test
 
 import (
-	"fmt"
 	"math"
 	"math/big"
 	"testing"
@@ -12,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdktestutil "github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,9 +21,6 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -72,7 +67,6 @@ type MockAnteHandler struct {
 type deductFeeTestCase struct {
 	name     string
 	balance  sdkmath.Int
-	rewards  sdkmath.Int
 	gas      uint64
 	gasPrice *sdkmath.Int
 	checkTx  bool
@@ -410,7 +404,7 @@ func (suite *AnteTestSuite) setupDeductFeeTestCase(addr sdk.AccAddress, priv cry
 	)
 
 	// prepare the testcase
-	err := suite.prepareAccountsForDelegationRewards(addr, tc.balance, tc.rewards)
+	err := fundAccountWithBaseDenom(suite.ctx, suite.app.BankKeeper, addr, tc.balance.Int64())
 	suite.Require().NoError(err, "failed to prepare accounts for delegation rewards")
 	suite.Commit()
 
@@ -433,67 +427,6 @@ func (suite *AnteTestSuite) setupDeductFeeTestCase(addr sdk.AccAddress, priv cry
 	return dfd, tx
 }
 
-func (suite *AnteTestSuite) prepareAccountsForDelegationRewards(addr sdk.AccAddress, balance, rewards sdkmath.Int) error {
-	totalNeededBalance := balance.Add(rewards)
-	if totalNeededBalance.IsZero() {
-		suite.app.AccountKeeper.SetAccount(suite.ctx, suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, addr))
-	} else {
-		// Fund account with enough tokens to stake them
-		err := fundAccountWithBaseDenom(suite.ctx, suite.app.BankKeeper, addr, totalNeededBalance.Int64())
-		if err != nil {
-			return fmt.Errorf("failed to fund account: %s", err.Error())
-		}
-	}
-
-	if rewards.IsZero() {
-		return nil
-	}
-	// reset historical count in distribution keeper which is necessary
-	// for the delegation rewards to be calculated correctly
-	suite.app.DistrKeeper.DeleteAllValidatorHistoricalRewards(suite.ctx)
-
-	// set distribution module account balance which pays out the rewards
-	distrAcc := suite.app.DistrKeeper.GetDistributionAccount(suite.ctx)
-	err := testutil.FundModuleAccount(suite.ctx, suite.app.BankKeeper, distrAcc.GetName(), sdk.NewCoins(sdk.NewCoin(suite.denom, rewards)))
-	if err != nil {
-		return fmt.Errorf("failed to fund distribution module account: %s", err.Error())
-	}
-	suite.app.AccountKeeper.SetModuleAccount(suite.ctx, distrAcc)
-
-	// Set up validator and delegate to it
-	privKey := ed25519.GenPrivKey()
-	addr2, _ := tests.NewAddrKey()
-	if err := fundAccountWithBaseDenom(suite.ctx, suite.app.BankKeeper, addr2.Bytes(), rewards.Int64()); err != nil {
-		return fmt.Errorf("failed to fund validator account: %s", err.Error())
-	}
-
-	zeroDec := sdk.ZeroDec()
-	stakingParams := suite.app.StakingKeeper.GetParams(suite.ctx)
-	stakingParams.BondDenom = suite.denom
-	stakingParams.MinCommissionRate = zeroDec
-	suite.app.StakingKeeper.SetParams(suite.ctx, stakingParams)
-
-	stakingHelper := teststaking.NewHelper(suite.T(), suite.ctx, suite.app.StakingKeeper)
-	stakingHelper.Commission = stakingtypes.NewCommissionRates(zeroDec, zeroDec, zeroDec)
-	stakingHelper.Denom = suite.denom
-
-	valAddr := sdk.ValAddress(addr2.Bytes())
-	// self-delegate the same amount of tokens as the delegate address also stakes
-	// this ensures, that the delegation rewards are 50% of the total rewards
-	stakingHelper.CreateValidator(valAddr, privKey.PubKey(), rewards, true)
-	stakingHelper.Delegate(addr, valAddr, rewards)
-
-	// end block to bond validator and increase block height
-	// Not using Commit() here because code panics due to invalid block height
-	staking.EndBlocker(suite.ctx, suite.app.StakingKeeper)
-
-	// allocate rewards to validator (of these 50% will be paid out to the delegator)
-	validator := suite.app.StakingKeeper.Validator(suite.ctx, valAddr)
-	allocatedRewards := sdk.NewDecCoins(sdk.NewDecCoin(suite.denom, rewards.Mul(sdk.NewInt(2))))
-	suite.app.DistrKeeper.AllocateTokensToValidator(suite.ctx, validator, allocatedRewards)
-
-	return nil
-}
 
 // fundAccountWithBaseDenom is a utility function that uses the FundAccount function
 // to fund an account with the default Evmos denomination.
