@@ -230,6 +230,18 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 			Expect(err).ToNot(BeNil())
 		})
 
+		It("cannot delegate unvested tokens in batches", func() {
+			totalVested := vested.AmountOf(stakeDenom)
+			oneThirdVested := totalVested.QuoRaw(3)
+			twoThirdsVested := totalVested.Sub(oneThirdVested)
+
+			err := delegate(clawbackAccount, twoThirdsVested)
+			Expect(err).To(BeNil())
+
+			err = delegate(clawbackAccount, twoThirdsVested)
+			Expect(err).ToNot(BeNil())
+		})
+
 		It("cannot transfer vested tokens", func() {
 			err := s.app.BankKeeper.SendCoins(
 				s.ctx,
