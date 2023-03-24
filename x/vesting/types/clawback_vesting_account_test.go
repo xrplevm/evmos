@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	fmt "fmt"
 	"testing"
 	"time"
 
@@ -316,90 +317,54 @@ func (suite *VestingAccountTestSuite) TestTrackDelegationUndelegation() {
 	endTime := now.Add(24 * time.Hour)
 
 	testCases := []struct {
-		name                   string
-		delegate               func(*types.ClawbackVestingAccount)
-		expDelegatedUnvested   sdk.Coins
-		expDelegatedFree       sdk.Coins
-		undelegate             func(*types.ClawbackVestingAccount)
-		expUndelegatedUnvested sdk.Coins
-		expUndelegatedFree     sdk.Coins
-		expDelegationPanic     bool
-		expUndelegationPanic   bool
+		name       string
+		delegate   func(*types.ClawbackVestingAccount)
+		undelegate func(*types.ClawbackVestingAccount)
 	}{
 		{
 			"delegate and undelegate all unvested coins",
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackDelegation(now, origCoins, origCoins)
 			},
-			origCoins,
-			nil,
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(origCoins)
 			},
-			nil,
-			nil,
-			false,
-			false,
 		},
 		{
 			"delegate and undelegated all vested coins",
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackDelegation(endTime, origCoins, origCoins)
 			},
-			nil,
-			origCoins,
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(origCoins)
 			},
-			nil,
-			nil,
-			false,
-			false,
 		},
 		{
 			"delegate and undelegate half of unvested coins",
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackDelegation(now, origCoins, vestingPeriods[0].Amount)
 			},
-			vestingPeriods[0].Amount,
-			nil,
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(vestingPeriods[0].Amount)
 			},
-			nil,
-			nil,
-			false,
-			false,
 		},
 		{
 			"no modifications when delegation amount is zero or not enough funds",
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackDelegation(now, origCoins, sdk.Coins{sdk.NewInt64Coin(stakeDenom, 1000000)})
 			},
-			vestingPeriods[0].Amount,
-			nil,
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(vestingPeriods[0].Amount)
 			},
-			nil,
-			nil,
-			true,
-			false,
 		},
 		{
 			"no modifications when undelegation amount is zero or not enough funds",
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackDelegation(now, origCoins, origCoins)
 			},
-			vestingPeriods[0].Amount,
-			nil,
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(sdk.Coins{sdk.NewInt64Coin(stakeDenom, 0)})
 			},
-			nil,
-			nil,
-			false,
-			true,
 		},
 		{
 			"vest 50% and delegate to two validator and undelegate from one validator that got slashed 50%",
@@ -407,15 +372,9 @@ func (suite *VestingAccountTestSuite) TestTrackDelegationUndelegation() {
 				va.TrackDelegation(now.Add(17*time.Hour), origCoins, sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)})
 				va.TrackDelegation(now.Add(17*time.Hour), origCoins, sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)})
 			},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)},
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(sdk.Coins{sdk.NewInt64Coin(stakeDenom, 25)})
 			},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 25)},
-			false,
-			false,
 		},
 		{
 			"vest 50% and delegate to two validator and undelegate from one validator that got slashed 50% and undelegate from the other validator that did not get slashed",
@@ -423,16 +382,10 @@ func (suite *VestingAccountTestSuite) TestTrackDelegationUndelegation() {
 				va.TrackDelegation(now.Add(17*time.Hour), origCoins, sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)})
 				va.TrackDelegation(now.Add(17*time.Hour), origCoins, sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)})
 			},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)},
 			func(va *types.ClawbackVestingAccount) {
 				va.TrackUndelegation(sdk.Coins{sdk.NewInt64Coin(stakeDenom, 25)})
 				va.TrackUndelegation(sdk.Coins{sdk.NewInt64Coin(stakeDenom, 50)})
 			},
-			sdk.Coins{sdk.NewInt64Coin(stakeDenom, 25)},
-			nil,
-			false,
-			false,
 		},
 	}
 
@@ -443,25 +396,19 @@ func (suite *VestingAccountTestSuite) TestTrackDelegationUndelegation() {
 
 			va := types.NewClawbackVestingAccount(bacc, sdk.AccAddress([]byte("funder")), origCoins, now, lockupPeriods, vestingPeriods)
 
-			if tc.expDelegationPanic { //nolint:gocritic
-				suite.Require().Panics(func() {
-					tc.delegate(va)
-				})
-			} else if tc.expUndelegationPanic {
-				suite.Require().Panics(func() {
-					tc.undelegate(va)
-				})
-			} else {
-				// Track Delegation
-				tc.delegate(va)
-				suite.Require().Equal(tc.expDelegatedUnvested, va.DelegatedVesting)
-				suite.Require().Equal(tc.expDelegatedFree, va.DelegatedFree)
+			// Track Delegation
+			tc.delegate(va)
+			fmt.Printf("Delegated vesting: %v\n", va.DelegatedVesting)
 
-				// Track Undelegation
-				tc.undelegate(va)
-				suite.Require().Equal(tc.expUndelegatedUnvested, va.DelegatedVesting)
-				suite.Require().Equal(tc.expUndelegatedFree, va.DelegatedFree)
-			}
+			var emptyCoins sdk.Coins
+
+			suite.Require().Equal(emptyCoins, va.DelegatedVesting)
+			suite.Require().Equal(emptyCoins, va.DelegatedFree)
+
+			// Track Undelegation
+			tc.undelegate(va)
+			suite.Require().Equal(emptyCoins, va.DelegatedVesting)
+			suite.Require().Equal(emptyCoins, va.DelegatedFree)
 		})
 	}
 }

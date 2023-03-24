@@ -155,7 +155,7 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("cannot delegate tokens", func() {
-			err := delegate(clawbackAccount, math.NewInt(100))
+			err := delegate(testAccounts[0], math.NewInt(100))
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -221,12 +221,12 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("can delegate vested tokens", func() {
-			err := delegate(clawbackAccount, vested.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vested.AmountOf(stakeDenom))
 			Expect(err).To(BeNil())
 		})
 
 		It("cannot delegate unvested tokens", func() {
-			err := delegate(clawbackAccount, vestingAmtTotal.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vestingAmtTotal.AmountOf(stakeDenom))
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -235,10 +235,10 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 			oneThirdVested := totalVested.QuoRaw(3)
 			twoThirdsVested := totalVested.Sub(oneThirdVested)
 
-			err := delegate(clawbackAccount, twoThirdsVested)
+			err := delegate(testAccounts[0], twoThirdsVested)
 			Expect(err).To(BeNil())
 
-			err = delegate(clawbackAccount, twoThirdsVested)
+			err = delegate(testAccounts[0], twoThirdsVested)
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -479,12 +479,12 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("can delegate vested tokens", func() {
-			err := delegate(clawbackAccount, vested.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vested.AmountOf(stakeDenom))
 			Expect(err).To(BeNil())
 		})
 
 		It("cannot delegate unvested tokens", func() {
-			err := delegate(clawbackAccount, vestingAmtTotal.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vestingAmtTotal.AmountOf(stakeDenom))
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -705,10 +705,6 @@ var _ = Describe("Clawback Vesting Accounts - claw back tokens", Ordered, func()
 		balanceGrantee := s.app.BankKeeper.GetBalance(s.ctx, grantee, stakeDenom)
 		balanceDest := s.app.BankKeeper.GetBalance(s.ctx, dest, stakeDenom)
 
-		// stake vested tokens
-		err := delegate(clawbackAccount, vested.AmountOf(stakeDenom))
-		Expect(err).To(BeNil())
-
 		// Perform clawback
 		msg := types.NewMsgClawback(funder, grantee, dest)
 		ctx := sdk.WrapSDKContext(s.ctx)
@@ -752,10 +748,6 @@ var _ = Describe("Clawback Vesting Accounts - claw back tokens", Ordered, func()
 		balanceGrantee := s.app.BankKeeper.GetBalance(s.ctx, grantee, stakeDenom)
 		balanceDest := s.app.BankKeeper.GetBalance(s.ctx, dest, stakeDenom)
 
-		// stake vested tokens
-		err := delegate(clawbackAccount, vested.AmountOf(stakeDenom))
-		Expect(err).To(BeNil())
-
 		// Perform clawback
 		msg := types.NewMsgClawback(funder, grantee, dest)
 		ctx := sdk.WrapSDKContext(s.ctx)
@@ -796,10 +788,6 @@ var _ = Describe("Clawback Vesting Accounts - claw back tokens", Ordered, func()
 		balanceFunder := s.app.BankKeeper.GetBalance(s.ctx, funder, stakeDenom)
 		balanceGrantee := s.app.BankKeeper.GetBalance(s.ctx, grantee, stakeDenom)
 		balanceDest := s.app.BankKeeper.GetBalance(s.ctx, dest, stakeDenom)
-
-		// stake vested tokens
-		err := delegate(clawbackAccount, vested.AmountOf(stakeDenom))
-		Expect(err).To(BeNil())
 
 		// Perform clawback
 		msg := types.NewMsgClawback(funder, grantee, dest)

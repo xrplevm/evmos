@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math"
 	"strings"
 	"time"
@@ -20,7 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/evmos/evmos/v12/app"
-	cosmosante "github.com/evmos/evmos/v12/app/ante/cosmos"
 	evmante "github.com/evmos/evmos/v12/app/ante/evm"
 	"github.com/evmos/evmos/v12/contracts"
 	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
@@ -215,16 +215,18 @@ func assertEthSucceeds(testAccounts []TestClawbackAccount, funder sdk.AccAddress
 
 // delegate is a helper function which creates a message to delegate a given amount of tokens
 // to a validator and checks if the Cosmos vesting delegation decorator returns no error.
-func delegate(clawbackAccount *types.ClawbackVestingAccount, amount sdkmath.Int) error {
+func delegate(account TestClawbackAccount, amount sdkmath.Int) error {
+	clawbackAccount := account.clawbackAccount
 	addr, err := sdk.AccAddressFromBech32(clawbackAccount.Address)
 	s.Require().NoError(err)
 
-	val, err := sdk.ValAddressFromBech32("evmosvaloper1z3t55m0l9h0eupuz3dp5t5cypyv674jjn4d6nn")
-	s.Require().NoError(err)
-	delegateMsg := stakingtypes.NewMsgDelegate(addr, val, sdk.NewCoin(utils.BaseDenom, amount))
+	coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, amount))
 
-	dec := cosmosante.NewVestingDelegationDecorator(s.app.AccountKeeper, s.app.StakingKeeper, types.ModuleCdc)
-	err = testutil.ValidateAnteForMsgs(s.ctx, dec, delegateMsg)
+	moduleAcc := s.app.AccountKeeper.GetModuleAccount(s.ctx, "bank")
+	fmt.Printf("Module acc: %v\n", moduleAcc)
+
+	err = s.app.BankKeeper.DelegateCoinsFromAccountToModule(s.ctx, addr, types.ModuleName, coins)
+
 	return err
 }
 

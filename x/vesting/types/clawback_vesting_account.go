@@ -85,14 +85,16 @@ func (va ClawbackVestingAccount) GetVestingCoins(blockTime time.Time) sdk.Coins 
 // LockedCoins returns the set of coins that are not spendable (i.e. locked),
 // defined as the vesting coins that are not delegated.
 func (va ClawbackVestingAccount) LockedCoins(blockTime time.Time) sdk.Coins {
-	return va.GetVestingCoins(blockTime)
+	// return va.GetVestingCoins(blockTime)
+	return va.BaseVestingAccount.LockedCoinsFromVesting(va.GetVestingCoins(blockTime))
 }
 
-// TrackDelegation tracks a desired delegation amount by setting the appropriate
-// values for the amount of delegated vesting, delegated free, and reducing the
-// overall amount of base coins.
 func (va *ClawbackVestingAccount) TrackDelegation(blockTime time.Time, balance, amount sdk.Coins) {
-	// Do nothing here, since we do not support delegating locked or unvested tokens
+	// Do nothing
+}
+
+func (va *ClawbackVestingAccount) TrackUndelegation(amount sdk.Coins) {
+	// Do nothing
 }
 
 // GetStartTime returns the time when vesting starts for a periodic vesting
