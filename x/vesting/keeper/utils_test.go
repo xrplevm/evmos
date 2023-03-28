@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"math"
 	"strings"
 	"time"
@@ -12,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -20,6 +18,7 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/evmos/evmos/v12/app"
 	evmante "github.com/evmos/evmos/v12/app/ante/evm"
 	"github.com/evmos/evmos/v12/contracts"
@@ -221,11 +220,7 @@ func delegate(account TestClawbackAccount, amount sdkmath.Int) error {
 	s.Require().NoError(err)
 
 	coins := sdk.NewCoins(sdk.NewCoin(utils.BaseDenom, amount))
-
-	moduleAcc := s.app.AccountKeeper.GetModuleAccount(s.ctx, "bank")
-	fmt.Printf("Module acc: %v\n", moduleAcc)
-
-	err = s.app.BankKeeper.DelegateCoinsFromAccountToModule(s.ctx, addr, types.ModuleName, coins)
+	err = s.app.BankKeeper.DelegateCoinsFromAccountToModule(s.ctx, addr, stakingtypes.BondedPoolName, coins)
 
 	return err
 }

@@ -94,9 +94,10 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 	accountGasCoverage := sdk.NewCoins(sdk.NewCoin(stakeDenom, math.NewInt(1e16)))
 
 	var (
-		clawbackAccount *types.ClawbackVestingAccount
-		unvested        sdk.Coins
-		vested          sdk.Coins
+		clawbackAccount   *types.ClawbackVestingAccount
+		unvested          sdk.Coins
+		vested            sdk.Coins
+		twoThirdsOfVested math.Int
 	)
 
 	dest := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
@@ -155,7 +156,7 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("cannot delegate tokens", func() {
-			err := delegate(testAccounts[0], math.NewInt(100))
+			err := delegate(testAccounts[0], accountGasCoverage.AmountOf(stakeDenom).Add(math.NewInt(1)))
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -218,11 +219,19 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 			expVested := sdk.NewCoins(sdk.NewCoin(stakeDenom, amt.Mul(sdk.NewInt(cliff))))
 			s.Require().NotEqual(vestingAmtTotal, vested)
 			s.Require().Equal(expVested, vested)
+
+			totalVested := vested.AmountOf(stakeDenom)
+			twoThirdsOfVested = totalVested.Sub(totalVested.QuoRaw(3))
 		})
 
-		It("can delegate vested tokens", func() {
-			err := delegate(testAccounts[0], vested.AmountOf(stakeDenom))
+		It("can delegate vested tokens and update spendable balance", func() {
+			testAccount := testAccounts[0]
+			spendablePre := s.app.BankKeeper.SpendableCoins(s.ctx, testAccount.address)
+			err := delegate(testAccount, vested.AmountOf(stakeDenom))
 			Expect(err).To(BeNil())
+
+			spendablePost := s.app.BankKeeper.SpendableCoins(s.ctx, testAccount.address)
+			Expect(spendablePost.AmountOf(stakeDenom).GT(spendablePre.AmountOf(stakeDenom)))
 		})
 
 		It("cannot delegate unvested tokens", func() {
@@ -231,14 +240,25 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("cannot delegate unvested tokens in batches", func() {
-			totalVested := vested.AmountOf(stakeDenom)
-			oneThirdVested := totalVested.QuoRaw(3)
-			twoThirdsVested := totalVested.Sub(oneThirdVested)
-
-			err := delegate(testAccounts[0], twoThirdsVested)
+			err := delegate(testAccounts[0], twoThirdsOfVested)
 			Expect(err).To(BeNil())
 
-			err = delegate(testAccounts[0], twoThirdsVested)
+			err = delegate(testAccounts[0], twoThirdsOfVested)
+			Expect(err).ToNot(BeNil())
+		})
+
+		It("cannot delegate then send tokens", func() {
+			err := delegate(testAccounts[0], twoThirdsOfVested)
+			Expect(err).To(BeNil())
+
+			twoThirdsOfVestedCoins := sdk.NewCoins(sdk.NewCoin(stakeDenom, twoThirdsOfVested))
+
+			err = s.app.BankKeeper.SendCoins(
+				s.ctx,
+				clawbackAccount.GetAddress(),
+				dest,
+				twoThirdsOfVestedCoins,
+			)
 			Expect(err).ToNot(BeNil())
 		})
 
