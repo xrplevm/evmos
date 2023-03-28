@@ -92,7 +92,7 @@ func (va ClawbackVestingAccount) LockedCoins(blockTime time.Time) sdk.Coins {
 // since they have not yet been vested. This exempts locked coins, since coins can
 // be staked while they are locked, so long as they have been vested.
 func (va *ClawbackVestingAccount) LockedCoinsFromDelegating(blockTime time.Time) sdk.Coins {
-	return va.GetUnvestedOnly(blockTime)
+	return va.BaseVestingAccount.LockedCoinsFromVesting(va.GetUnvestedOnly(blockTime))
 }
 
 // TrackDelegation tracks a delegation amount for any given vesting account type
