@@ -215,13 +215,7 @@ func assertEthSucceeds(testAccounts []TestClawbackAccount, funder sdk.AccAddress
 // delegate is a helper function which creates a message to delegate a given amount of tokens
 // to a validator and checks if the Cosmos vesting delegation decorator returns no error.
 func delegate(account TestClawbackAccount, coins sdk.Coins) error {
-	clawbackAccount := account.clawbackAccount
-	addr, err := sdk.AccAddressFromBech32(clawbackAccount.Address)
-	s.Require().NoError(err)
-
-	err = s.app.BankKeeper.DelegateCoinsFromAccountToModule(s.ctx, addr, stakingtypes.BondedPoolName, coins)
-
-	return err
+	return s.app.BankKeeper.DelegateCoinsFromAccountToModule(s.ctx, account.address, stakingtypes.BondedPoolName, coins)
 }
 
 // validateEthVestingTransactionDecorator is a helper function to execute the eth vesting transaction decorator
