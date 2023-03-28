@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	fmt "fmt"
 	"testing"
 	"time"
 
@@ -398,7 +397,6 @@ func (suite *VestingAccountTestSuite) TestTrackDelegationUndelegation() {
 
 			// Track Delegation
 			tc.delegate(va)
-			fmt.Printf("Delegated vesting: %v\n", va.DelegatedVesting)
 
 			var emptyCoins sdk.Coins
 

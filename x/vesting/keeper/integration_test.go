@@ -97,7 +97,7 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		clawbackAccount   *types.ClawbackVestingAccount
 		unvested          sdk.Coins
 		vested            sdk.Coins
-		twoThirdsOfVested math.Int
+		twoThirdsOfVested sdk.Coins
 	)
 
 	dest := sdk.AccAddress(utiltx.GenerateAddress().Bytes())
@@ -156,7 +156,7 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("cannot delegate tokens", func() {
-			err := delegate(testAccounts[0], accountGasCoverage.AmountOf(stakeDenom).Add(math.NewInt(1)))
+			err := delegate(testAccounts[0], accountGasCoverage.Add(sdk.NewCoin(stakeDenom, math.NewInt(1))))
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -220,14 +220,16 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 			s.Require().NotEqual(vestingAmtTotal, vested)
 			s.Require().Equal(expVested, vested)
 
-			totalVested := vested.AmountOf(stakeDenom)
-			twoThirdsOfVested = totalVested.Sub(totalVested.QuoRaw(3))
+			twoThirdsOfVested = vested.Sub(vested.QuoInt(sdk.NewInt(3))...)
 		})
 
 		It("can delegate vested tokens and update spendable balance", func() {
 			testAccount := testAccounts[0]
+			// Verify that the total spendable coins decreases after staking
+			// vested tokens.
 			spendablePre := s.app.BankKeeper.SpendableCoins(s.ctx, testAccount.address)
-			err := delegate(testAccount, vested.AmountOf(stakeDenom))
+
+			err := delegate(testAccount, vested)
 			Expect(err).To(BeNil())
 
 			spendablePost := s.app.BankKeeper.SpendableCoins(s.ctx, testAccount.address)
@@ -235,7 +237,7 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("cannot delegate unvested tokens", func() {
-			err := delegate(testAccounts[0], vestingAmtTotal.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vestingAmtTotal)
 			Expect(err).ToNot(BeNil())
 		})
 
@@ -251,13 +253,11 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 			err := delegate(testAccounts[0], twoThirdsOfVested)
 			Expect(err).To(BeNil())
 
-			twoThirdsOfVestedCoins := sdk.NewCoins(sdk.NewCoin(stakeDenom, twoThirdsOfVested))
-
 			err = s.app.BankKeeper.SendCoins(
 				s.ctx,
 				clawbackAccount.GetAddress(),
 				dest,
-				twoThirdsOfVestedCoins,
+				twoThirdsOfVested,
 			)
 			Expect(err).ToNot(BeNil())
 		})
@@ -499,12 +499,12 @@ var _ = Describe("Clawback Vesting Accounts", Ordered, func() {
 		})
 
 		It("can delegate vested tokens", func() {
-			err := delegate(testAccounts[0], vested.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vested)
 			Expect(err).To(BeNil())
 		})
 
 		It("cannot delegate unvested tokens", func() {
-			err := delegate(testAccounts[0], vestingAmtTotal.AmountOf(stakeDenom))
+			err := delegate(testAccounts[0], vestingAmtTotal)
 			Expect(err).ToNot(BeNil())
 		})
 
