@@ -50,7 +50,7 @@ func Commit(ctx sdk.Context, app *app.Evmos, t time.Duration, vs *tmtypes.Valida
 		header.ValidatorsHash = vs.Hash()
 		header.NextValidatorsHash = nextVals.Hash()
 	} else {
-		app.EndBlocker(ctx, abci.RequestEndBlock{Height: header.Height})
+		app.EndBlock(abci.RequestEndBlock{Height: header.Height})
 	}
 
 	_ = app.Commit()
@@ -82,7 +82,7 @@ func CommitKeepingCurrentCtx(ctx sdk.Context, app *app.Evmos, t time.Duration, v
 		header.ValidatorsHash = vs.Hash()
 		header.NextValidatorsHash = nextVals.Hash()
 	} else {
-		app.EndBlocker(ctx, abci.RequestEndBlock{Height: header.Height})
+		app.EndBlock(abci.RequestEndBlock{Height: header.Height})
 	}
 
 	_ = app.Commit()
