@@ -57,6 +57,7 @@ ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
   build_tags += gcc
 endif
 build_tags += $(BUILD_TAGS)
+build_tags += pebbledb
 build_tags := $(strip $(build_tags))
 
 # process linker flags
@@ -65,7 +66,8 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=evmos \
           -X github.com/cosmos/cosmos-sdk/version.AppName=$(EVMOS_BINARY) \
           -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
           -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-          -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION)
+          -X github.com/tendermint/tendermint/version.TMCoreSemVer=$(TMVERSION) \
+		  -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb
 
 # DB backend selection
 ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
