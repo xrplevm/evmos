@@ -203,6 +203,7 @@ func DefaultConfig() *Config {
 		EVM:     *DefaultEVMConfig(),
 		JSONRPC: *DefaultJSONRPCConfig(),
 		TLS:     *DefaultTLSConfig(),
+		MemIAVL: memiavlcfg.DefaultMemIAVLConfig(),
 	}
 }
 
@@ -368,6 +369,14 @@ func GetConfig(v *viper.Viper) (Config, error) {
 		TLS: TLSConfig{
 			CertificatePath: v.GetString("tls.certificate-path"),
 			KeyPath:         v.GetString("tls.key-path"),
+		},
+		MemIAVL: memiavlcfg.MemIAVLConfig{
+			Enable: v.GetBool("memiavl.enable"),
+			ZeroCopy: v.GetBool("memiavl.zero-copy"),
+			AsyncCommitBuffer: v.GetInt("async-commit-buffer"),
+			SnapshotKeepRecent: v.GetUint32("snapshot-keep-recent"),
+			SnapshotInterval: v.GetUint32("snapshot-interval"),
+			CacheSize: v.GetInt("cache-size"),
 		},
 	}, nil
 }
