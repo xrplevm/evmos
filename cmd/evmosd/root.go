@@ -137,6 +137,11 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		pruning.PruningCmd(a.newApp),
 	)
 
+	changeSetCmd := ChangeSetCmd()
+	if changeSetCmd != nil {
+		rootCmd.AddCommand(changeSetCmd)
+	}
+	
 	evmosserver.AddCommands(
 		rootCmd,
 		evmosserver.NewDefaultStartOptions(a.newApp, app.DefaultNodeHome),
