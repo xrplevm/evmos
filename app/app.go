@@ -279,6 +279,40 @@ var (
 	_ ibctesting.TestingApp   = (*Evmos)(nil)
 )
 
+
+
+func StoreKeys(experimental bool) (
+	map[string]*storetypes.KVStoreKey,
+	map[string]*storetypes.MemoryStoreKey,
+	map[string]*storetypes.TransientStoreKey,
+) {
+	storeKeys := []string{
+		// SDK keys
+		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
+		distrtypes.StoreKey, slashingtypes.StoreKey,
+		govtypes.StoreKey, paramstypes.StoreKey, upgradetypes.StoreKey,
+		evidencetypes.StoreKey, capabilitytypes.StoreKey,
+		feegrant.StoreKey, authzkeeper.StoreKey,
+		// ibc keys
+		ibchost.StoreKey, ibctransfertypes.StoreKey,
+		// ica keys
+		icahosttypes.StoreKey,
+		// ethermint keys
+		evmtypes.StoreKey, feemarkettypes.StoreKey,
+		// evmos keys
+		inflationtypes.StoreKey, erc20types.StoreKey, incentivestypes.StoreKey,
+		epochstypes.StoreKey, claimstypes.StoreKey, vestingtypes.StoreKey,
+		revenuetypes.StoreKey, recoverytypes.StoreKey,
+	}
+	keys := sdk.NewKVStoreKeys(storeKeys...)
+
+	// Add the EVM transient store key
+	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
+	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+
+	return keys, memKeys, tkeys
+}
+
 // Evmos implements an extended ABCI application. It is an application
 // that may process transactions through Ethereum's EVM running atop of
 // Tendermint consensus.

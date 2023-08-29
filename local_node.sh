@@ -33,7 +33,7 @@ command -v jq >/dev/null 2>&1 || {
 set -e
 
 # Reinstall daemon
-make install
+# make install
 
 # User prompt if an existing local node configuration is found.
 if [ -d "$HOMEDIR" ]; then
@@ -155,6 +155,13 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 
 	# Run this to ensure everything worked and that the genesis file is setup correctly
 	evmosd validate-genesis --home "$HOMEDIR"
+
+	# enable versiondb
+	sed -i.bak 's/streamers = \[\]/streamers = \["versiondb"\]/g' "$APP_TOML"
+	# enable memiavl
+	toml-cli set "$APP_TOML" memiavl.enable true
+
+	mkdir "$HOMEDIR"/data/snapshots
 
 	if [[ $1 == "pending" ]]; then
 		echo "pending mode is on, please wait for the first block committed."

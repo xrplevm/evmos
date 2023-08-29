@@ -77,7 +77,8 @@ endif
 # handle rocksdb
 ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
   CGO_ENABLED=1
-  build_tags += rocksdb
+  build_tags += rocksdb grocksdb_no_link
+  VERSION := $(VERSION)-rocksdb
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=rocksdb
 endif
 # handle boltdb
