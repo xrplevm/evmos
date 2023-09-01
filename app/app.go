@@ -464,10 +464,12 @@ func NewEvmos(
 	)
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, authAddr,
+		app.GetSubspace(stakingtypes.ModuleName),
 	)
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.AccountKeeper, app.BankKeeper,
 		stakingKeeper, authtypes.FeeCollectorName, authAddr,
+		app.GetSubspace(distrtypes.ModuleName),
 	)
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec, app.LegacyAmino(), keys[slashingtypes.StoreKey], stakingKeeper, authAddr,
