@@ -6,8 +6,8 @@ package main
 import (
 	"sort"
 
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/cmd/evmosd/opendb"
+	"github.com/evmos/evmos/v13/app"
+	"github.com/evmos/evmos/v13/cmd/evmosd/opendb"
 	versiondbclient "github.com/crypto-org-chain/cronos/versiondb/client"
 	"github.com/linxGnu/grocksdb"
 	"github.com/spf13/cobra"

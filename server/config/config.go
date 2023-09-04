@@ -166,17 +166,6 @@ func AppConfig(denom string) (string, interface{}) {
 	//   own app.toml to override, or use this default value.
 	//
 	// In evmos, we set the min gas prices to 0.
-	if denom != "" {
-		srvCfg.MinGasPrices = "0" + denom
-	}
-
-	customAppConfig := Config{
-		Config:  *srvCfg,
-		EVM:     *DefaultEVMConfig(),
-		JSONRPC: *DefaultJSONRPCConfig(),
-		TLS:     *DefaultTLSConfig(),
-		MemIAVL: memiavlcfg.DefaultMemIAVLConfig(),
-	}
 	customAppConfig.Config.MinGasPrices = "0" + denom
 
 	customAppTemplate := config.DefaultConfigTemplate + DefaultConfigTemplate
