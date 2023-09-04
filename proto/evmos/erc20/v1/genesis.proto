@@ -1,10 +1,12 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 syntax = "proto3";
 package evmos.erc20.v1;
 
 import "evmos/erc20/v1/erc20.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/evmos/evmos/v12/x/erc20/types";
+option go_package = "github.com/evmos/evmos/v13/x/erc20/types";
 
 // GenesisState defines the module's genesis state.
 message GenesisState {

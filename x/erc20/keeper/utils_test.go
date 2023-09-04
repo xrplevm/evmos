@@ -21,21 +21,21 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/contracts"
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	ibctesting "github.com/evmos/evmos/v12/ibc/testing"
-	"github.com/evmos/evmos/v12/server/config"
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	teststypes "github.com/evmos/evmos/v12/types/tests"
-	"github.com/evmos/evmos/v12/utils"
-	claimstypes "github.com/evmos/evmos/v12/x/claims/types"
-	"github.com/evmos/evmos/v12/x/erc20/types"
-	"github.com/evmos/evmos/v12/x/evm/statedb"
-	evm "github.com/evmos/evmos/v12/x/evm/types"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
-	inflationtypes "github.com/evmos/evmos/v12/x/inflation/types"
+	"github.com/evmos/evmos/v13/app"
+	"github.com/evmos/evmos/v13/contracts"
+	"github.com/evmos/evmos/v13/crypto/ethsecp256k1"
+	ibctesting "github.com/evmos/evmos/v13/ibc/testing"
+	"github.com/evmos/evmos/v13/server/config"
+	"github.com/evmos/evmos/v13/testutil"
+	utiltx "github.com/evmos/evmos/v13/testutil/tx"
+	teststypes "github.com/evmos/evmos/v13/types/tests"
+	"github.com/evmos/evmos/v13/utils"
+	claimstypes "github.com/evmos/evmos/v13/x/claims/types"
+	"github.com/evmos/evmos/v13/x/erc20/types"
+	"github.com/evmos/evmos/v13/x/evm/statedb"
+	evm "github.com/evmos/evmos/v13/x/evm/types"
+	feemarkettypes "github.com/evmos/evmos/v13/x/feemarket/types"
+	inflationtypes "github.com/evmos/evmos/v13/x/inflation/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -306,7 +306,7 @@ func (suite *KeeperTestSuite) Commit() {
 //  4. Commit
 func (suite *KeeperTestSuite) CommitAndBeginBlockAfter(t time.Duration) {
 	var err error
-	suite.ctx, err = testutil.Commit(suite.ctx, suite.app, t, nil)
+	suite.ctx, err = testutil.CommitAndCreateNewCtx(suite.ctx, suite.app, t, nil)
 	suite.Require().NoError(err)
 
 	queryHelper := baseapp.NewQueryServerTestHelper(suite.ctx, suite.app.InterfaceRegistry())

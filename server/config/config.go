@@ -1,18 +1,5 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package config
 
 import (
@@ -165,7 +152,7 @@ type TLSConfig struct {
 func AppConfig(denom string) (string, interface{}) {
 	// Optionally allow the chain developer to overwrite the SDK's default
 	// server config.
-	srvCfg := config.DefaultConfig()
+	customAppConfig := DefaultConfig()
 
 	// The SDK's default minimum gas price is set to "" (empty value) inside
 	// app.toml. If left empty by validators, the node will halt on startup.
@@ -190,16 +177,24 @@ func AppConfig(denom string) (string, interface{}) {
 		TLS:     *DefaultTLSConfig(),
 		MemIAVL: memiavlcfg.DefaultMemIAVLConfig(),
 	}
+	customAppConfig.Config.MinGasPrices = "0" + denom
 
 	customAppTemplate := config.DefaultConfigTemplate + DefaultConfigTemplate
 
-	return customAppTemplate, customAppConfig
+	return customAppTemplate, *customAppConfig
 }
 
 // DefaultConfig returns server's default configuration.
 func DefaultConfig() *Config {
+	defaultSDKConfig := config.DefaultConfig()
+	defaultSDKConfig.API.Enable = false
+	defaultSDKConfig.GRPC.Enable = false
+	defaultSDKConfig.GRPCWeb.Enable = false
+	defaultSDKConfig.Rosetta.Enable = false
+	defaultSDKConfig.Telemetry.Enabled = false
+
 	return &Config{
-		Config:  *config.DefaultConfig(),
+		Config:  *defaultSDKConfig,
 		EVM:     *DefaultEVMConfig(),
 		JSONRPC: *DefaultJSONRPCConfig(),
 		TLS:     *DefaultTLSConfig(),
@@ -237,7 +232,7 @@ func GetAPINamespaces() []string {
 // DefaultJSONRPCConfig returns an EVM config with the JSON-RPC API enabled by default
 func DefaultJSONRPCConfig() *JSONRPCConfig {
 	return &JSONRPCConfig{
-		Enable:                   true,
+		Enable:                   false,
 		API:                      GetDefaultAPINamespaces(),
 		Address:                  DefaultJSONRPCAddress,
 		WsAddress:                DefaultJSONRPCWsAddress,

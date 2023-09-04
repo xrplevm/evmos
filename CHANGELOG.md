@@ -33,20 +33,61 @@ Types of changes (Stanzas):
 Ref: https://keepachangelog.com/en/1.0.0/
 -->
 
+
+
 # Changelog
 
+## [v13.0.2] - 2023-07-05
+
+### Bug Fixes
+
+- (upgrade) [#1644](https://github.com/evmos/evmos/pull/1644) Adjust upgrade constants
+- (ci) [#1642](https://github.com/evmos/evmos/pull/1642) Fix target folder in GH action to push to the [Buf Schema Registry](https://buf.build/evmos/evmos) upon release
+
+## [v13.0.1] - 2023-07-04
+
+### Improvements
+
+- (deps) [#1635](https://github.com/evmos/evmos/pull/1635) Update cometbft `v0.34.29` with several minor bug fixes and low-severity security-fixes.
+ 
+## [v13.0.0] - 2023-07-03
+
+### Improvements
+
+- (app) [#1623](https://github.com/evmos/evmos/pull/1623) Adjust default app config to disable all server options
+- (app) [#1619](https://github.com/evmos/evmos/pull/1619) Add snapshot commands to CLI
+- (revenue) [#1607](https://github.com/evmos/evmos/pull/1607) Route gas fees from calling EVM extensions to community pool
+- (docker) [#1606](https://github.com/evmos/evmos/pull/1606) Improve Dockerfile to reduce image size 
+- (deps) [#1597](https://github.com/evmos/evmos/pull/1597) Bump geth fork
+- (deps) [#1595](https://github.com/evmos/evmos/pull/1595) Bump cometbft and goleveldb
+- (evm) [#1578](https://github.com/evmos/evmos/pull/1578#) Add support of ICS20 transfer extension
+- (test) [#1486](https://github.com/evmos/evmos/pull/1486) Add benchmark tests for `DeductFeeDecorator` and `EthGasConsumeDecorator` ante handler decorators
+- (deps) [#1488](https://github.com/evmos/evmos/pull/1488) Bump btcd version to [`v0.23.3`](https://github.com/btcsuite/btcd/releases/tag/v0.23.3)
+- (deps) [#1492](https://github.com/evmos/evmos/pull/1492) Bump Cosmos SDK version to [`v0.46.11-alpha.ledger`](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.11-alpha.ledger) & use cometbft [`v0.34.27`](https://github.com/cometbft/cometbft/releases/tag/v0.34.27) replacement for Tendermint import
+
+### State Machine Breaking
+
+- (evm) [#1625](https://github.com/evmos/evmos/pull/1625) Migrate updated EVM extensions
+- (vesting) [#1596](https://github.com/evmos/evmos/pull/1596) Add MsgCreateClawbackVestingAccount period validation
+- (evm) [#1535](https://github.com/evmos/evmos/pull/1535) Add EVM extensions support
+
+### Bug Fixes
+
+- (evm) [1602](https://github.com/evmos/evmos/pull/1602) Fixed hard coded BaseDenom and wrong comparison for MaxUint256
+- (deps) [#1567](https://github.com/evmos/evmos/pull/1567) Bump cosmos-sdk version to `v0.46.11-alpha.ledger.7`.
+  Fix memory leak in `cosmos/iavl` package.
+ 
 ## [v12.1.6] - 2023-07-04
 
-### Improvement
+### Improvements
 
-- (deps) [#1635](https://github.com/evmos/evmos/pull/1635) Update cometbft `v0.34.29` with several minor bug fixes and low-severity security-fixes
+- (deps) [#1635](https://github.com/evmos/evmos/pull/1635) Update cometbft `v0.34.29` with several minor bug fixes and low-severity security-fixes.
 
 ## [v12.1.5] - 2023-06-08
 
 ### Bug Fixes
 
 - (vesting) [GHSA-2q3r-p2m3-898g](https://github.com/evmos/evmos/commit/39b750cdaf1d69158ab93da85bd43ae4a7da1456) Apply ClawbackVestingAccount Barberry patch & Bump SDK to v0.46.13
-
 
 ## [v12.1.4] - 2023-05-26
 
@@ -83,6 +124,13 @@ Ref: https://keepachangelog.com/en/1.0.0/
 - (config) [#1513](https://github.com/evmos/evmos/pull/1513) Set default `timeout_commit` to `3s`
 
 ## [v12.1.0] - 2023-03-24
+
+### Improvements
+
+- (deps) [#1498](https://github.com/evmos/evmos/pull/1498) Bump Cosmos SDK version to [v0.46.10-ledger.1](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.10-ledger.1)
+- (lint) [#1487](https://github.com/evmos/evmos/pull/1487) Fix lint issues created by new `golangci-lint` version
+
+## [v12.0.0] - 2023-03-23
 
 ### State Machine Breaking
 
@@ -130,8 +178,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 - (deps) [#1473](https://github.com/evmos/evmos/pull/1473) Bump Cosmos SDK version to [v0.46.10-alpha.ledger.2](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.10-alpha.ledger.2)
 - (ante) [#1470](https://github.com/evmos/evmos/pull/1470) Improve error message on `DynamicFeeChecker` ante handler
 - (test) [#1484](https://github.com/evmos/evmos/pull/1484) Update e2e test: refactor Makefile command and use latest changes for the tests
-- (deps) [#1498](https://github.com/evmos/evmos/pull/1498) Bump Cosmos SDK version to [v0.46.10-ledger.1](https://github.com/evmos/cosmos-sdk/releases/tag/v0.46.10-ledger.1)
-- (lint) [#1487](https://github.com/evmos/evmos/pull/1487) Fix lint issues created by new `golangci-lint` version
 
 ### Bug Fixes
 

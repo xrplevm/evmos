@@ -6,14 +6,14 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ethante "github.com/evmos/evmos/v12/app/ante/evm"
-	"github.com/evmos/evmos/v12/server/config"
-	"github.com/evmos/evmos/v12/testutil"
-	testutiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
-	"github.com/evmos/evmos/v12/x/evm/statedb"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	ethante "github.com/evmos/evmos/v13/app/ante/evm"
+	"github.com/evmos/evmos/v13/server/config"
+	"github.com/evmos/evmos/v13/testutil"
+	testutiltx "github.com/evmos/evmos/v13/testutil/tx"
+	"github.com/evmos/evmos/v13/types"
+	"github.com/evmos/evmos/v13/utils"
+	"github.com/evmos/evmos/v13/x/evm/statedb"
+	evmtypes "github.com/evmos/evmos/v13/x/evm/types"
 
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -370,13 +370,12 @@ func (suite *AnteTestSuite) TestEthGasConsumeDecorator() {
 			tx2,
 			tx2GasLimit, // it's capped
 			func(ctx sdk.Context) sdk.Context {
-				ctx, err := testutil.PrepareAccountsForDelegationRewards(
-					suite.T(), ctx, suite.app, sdk.AccAddress(addr.Bytes()), sdk.ZeroInt(), sdk.NewInt(1e16),
+				return suite.prepareAccount(
+					ctx,
+					addr.Bytes(),
+					sdk.ZeroInt(),
+					sdk.NewInt(1e16),
 				)
-				suite.Require().NoError(err, "error while preparing accounts for delegation rewards")
-				return ctx.
-					WithBlockGasMeter(sdk.NewGasMeter(1e19)).
-					WithBlockHeight(ctx.BlockHeight() + 1)
 			},
 			true, false,
 			tx2Priority,
@@ -397,13 +396,12 @@ func (suite *AnteTestSuite) TestEthGasConsumeDecorator() {
 			tx2,
 			tx2GasLimit, // it's capped
 			func(ctx sdk.Context) sdk.Context {
-				ctx, err := testutil.PrepareAccountsForDelegationRewards(
-					suite.T(), ctx, suite.app, sdk.AccAddress(addr.Bytes()), sdk.NewInt(1e16), sdk.NewInt(1e16),
+				return suite.prepareAccount(
+					ctx,
+					addr.Bytes(),
+					sdk.NewInt(1e16),
+					sdk.NewInt(1e16),
 				)
-				suite.Require().NoError(err, "error while preparing accounts for delegation rewards")
-				return ctx.
-					WithBlockGasMeter(sdk.NewGasMeter(1e19)).
-					WithBlockHeight(ctx.BlockHeight() + 1)
 			},
 			true, false,
 			tx2Priority,

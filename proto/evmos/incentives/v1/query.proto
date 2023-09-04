@@ -1,3 +1,5 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 syntax = "proto3";
 package evmos.incentives.v1;
 
@@ -8,7 +10,7 @@ import "evmos/incentives/v1/incentives.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
-option go_package = "github.com/evmos/evmos/v12/x/incentives/types";
+option go_package = "github.com/evmos/evmos/v13/x/incentives/types";
 
 // Query defines the gRPC querier service.
 service Query {

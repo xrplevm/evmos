@@ -13,11 +13,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	sdkvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	"github.com/evmos/evmos/v12/utils"
-	"github.com/evmos/evmos/v12/x/vesting/types"
+	"github.com/evmos/evmos/v13/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v13/testutil"
+	utiltx "github.com/evmos/evmos/v13/testutil/tx"
+	"github.com/evmos/evmos/v13/utils"
+	"github.com/evmos/evmos/v13/x/vesting/types"
 )
 
 // TestClawbackAccount is a struct to store all relevant information that is corresponding
@@ -864,7 +864,7 @@ var _ = Describe("Clawback Vesting Accounts - claw back tokens", Ordered, func()
 	})
 })
 
-// Trying to replicate the faulty behaviour in MsgCreateClawbackVestingAccount,
+// Trying to replicate the faulty behavior in MsgCreateClawbackVestingAccount,
 // that was disclosed as a potential attack vector in relation to the Barberry
 // security patch.
 //
@@ -904,7 +904,7 @@ var _ = Describe("Clawback Vesting Account - Barberry bug", func() {
 	})
 
 	Context("when creating a clawback vesting account", func() {
-		var testcases = []struct {
+		testcases := []struct {
 			name         string
 			lockupCoins  sdk.Coins
 			vestingCoins sdk.Coins
@@ -934,7 +934,7 @@ var _ = Describe("Clawback Vesting Account - Barberry bug", func() {
 				name:         "fail - negative amounts for the vesting period",
 				vestingCoins: coinsWithNegAmount,
 				expError:     true,
-				errContains:  "invalid coins",
+				errContains:  "invalid coins: invalid request",
 			},
 			{
 				name:        "fail - zero amount for the lockup period",
@@ -946,7 +946,7 @@ var _ = Describe("Clawback Vesting Account - Barberry bug", func() {
 				name:         "fail - zero amount for the vesting period",
 				vestingCoins: coinsWithZeroAmount,
 				expError:     true,
-				errContains:  "invalid coins",
+				errContains:  "invalid coins: invalid request",
 			},
 			{
 				name:         "fail - empty amount for both the lockup and vesting periods",

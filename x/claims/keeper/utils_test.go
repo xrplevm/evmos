@@ -13,17 +13,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/evmos/evmos/v12/app"
-	"github.com/evmos/evmos/v12/contracts"
-	"github.com/evmos/evmos/v12/crypto/ethsecp256k1"
-	"github.com/evmos/evmos/v12/testutil"
-	utiltx "github.com/evmos/evmos/v12/testutil/tx"
-	evmostypes "github.com/evmos/evmos/v12/types"
-	"github.com/evmos/evmos/v12/utils"
-	"github.com/evmos/evmos/v12/x/claims/types"
-	evm "github.com/evmos/evmos/v12/x/evm/types"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
-	incentivestypes "github.com/evmos/evmos/v12/x/incentives/types"
+	"github.com/evmos/evmos/v13/app"
+	"github.com/evmos/evmos/v13/contracts"
+	"github.com/evmos/evmos/v13/crypto/ethsecp256k1"
+	"github.com/evmos/evmos/v13/testutil"
+	utiltx "github.com/evmos/evmos/v13/testutil/tx"
+	evmostypes "github.com/evmos/evmos/v13/types"
+	"github.com/evmos/evmos/v13/utils"
+	"github.com/evmos/evmos/v13/x/claims/types"
+	evm "github.com/evmos/evmos/v13/x/evm/types"
+	feemarkettypes "github.com/evmos/evmos/v13/x/feemarket/types"
+	incentivestypes "github.com/evmos/evmos/v13/x/incentives/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -94,7 +94,7 @@ func (suite *KeeperTestSuite) Commit() {
 // Commit commits a block at a given time.
 func (suite *KeeperTestSuite) CommitAfter(t time.Duration) {
 	var err error
-	suite.ctx, err = testutil.Commit(suite.ctx, suite.app, t, nil)
+	suite.ctx, err = testutil.CommitAndCreateNewCtx(suite.ctx, suite.app, t, nil)
 	suite.Require().NoError(err)
 
 	queryHelper := baseapp.NewQueryServerTestHelper(suite.ctx, suite.app.InterfaceRegistry())
@@ -128,7 +128,7 @@ func govProposal(priv *ethsecp256k1.PrivKey) (uint64, error) {
 		"Test", "TTT", uint8(18),
 	)
 	s.Require().NoError(err)
-	s.ctx, err = testutil.Commit(s.ctx, s.app, time.Second*0, nil)
+	s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second*0, nil)
 	s.Require().NoError(err)
 	content := incentivestypes.NewRegisterIncentiveProposal(
 		"test",

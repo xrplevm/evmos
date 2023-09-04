@@ -1,9 +1,11 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 syntax = "proto3";
 package ethermint.feemarket.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/evmos/evmos/v12/x/feemarket/types";
+option go_package = "github.com/evmos/evmos/v13/x/feemarket/types";
 
 // Params defines the EVM module parameters
 message Params {
