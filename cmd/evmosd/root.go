@@ -40,6 +40,7 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
 	evmosclient "github.com/evmos/evmos/v13/client"
+	"github.com/evmos/evmos/v13/client/block"
 	"github.com/evmos/evmos/v13/client/debug"
 	"github.com/evmos/evmos/v13/encoding"
 	"github.com/evmos/evmos/v13/ethereum/eip712"
@@ -124,6 +125,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		config.Cmd(),
 		pruning.PruningCmd(a.newApp),
 		snapshot.Cmd(a.newApp),
+		block.LastBlockCmd(),
 	)
 
 	evmosserver.AddCommands(
