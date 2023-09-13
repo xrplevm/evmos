@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	dbm "github.com/cometbft/cometbft-db"
-	tmstore "github.com/cometbft/cometbft/proto/tendermint/store"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/cometbft/cometbft/types"
+	dbm "github.com/tendermint/tm-db"
+	tmstore "github.com/tendermint/tendermint/proto/tendermint/store"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	"github.com/tendermint/tendermint/types"
 	"github.com/cosmos/gogoproto/proto"
 )
 
