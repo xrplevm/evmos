@@ -12,7 +12,14 @@ RUN --mount=type=bind,target=. --mount=type=secret,id=GITHUB_TOKEN \
 
 COPY . .
 
-RUN make build
+#RUN make build
+RUN go mod edit -replace github.com/tendermint/tm-db=github.com/notional-labs/tm-db@v0.6.8-pebble \
+    && go mod tidy \
+    && go mod edit -replace github.com/cometbft/cometbft-db=github.com/notional-labs/cometbft-db@pebble \
+    && go mod tidy \
+    && go install -ldflags "-w -s -X github.com/cosmos/cosmos-sdk/types.DBBackend=pebbledb \
+       -X github.com/cosmos/cosmos-sdk/version.Version=$(git describe --tags)-pebbledb \
+       -X github.com/cosmos/cosmos-sdk/version.Commit=$(git log -1 --format='%H')" -tags pebbledb ./...
 
 RUN go install github.com/MinseokOh/toml-cli@latest
 
