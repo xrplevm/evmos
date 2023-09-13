@@ -1,45 +1,76 @@
+// Copyright Tharsis Labs Ltd.(Evmos)
+// SPDX-License-Identifier:ENCL-1.0(https://github.com/evmos/evmos/blob/main/LICENSE)
 package block
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
 
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
-	"github.com/tendermint/tendermint/types"
 )
 
-func LastBlockCmd() *cobra.Command {
+func Cmd() *cobra.Command {
+	var height string
 	cmd := &cobra.Command{
-		Use:   "last-block [path_to_db]",
-		Short: "Get the last block of the db",
-		Args:  cobra.ExactArgs(1),
+		Use:   "block",
+		Short: "Get a specific block persisted in the db. If height is not specified, defaults to the latest.",
+		Long:  "Get the last block persisted in the db. If height is not specified, defaults to the latest.\nThis command works only if no other process is using the db. Before using it, make sure to stop your node.\nIf you're using a custom home directory, specify it with the '--home' flag",
+		PreRunE: func(cmd *cobra.Command, _ []string) error {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+
+			// Bind flags to the Context's Viper so the app construction can set
+			// options accordingly.
+			err := serverCtx.Viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			cfg := serverCtx.Config
+			home := cfg.RootDir
 
-			block, err := getLatestBlock(args[0])
+			store, err := newStore(home, server.GetAppDBBackend(serverCtx.Viper))
+			if err != nil {
+				return fmt.Errorf("error while openning db: %w", err)
+			}
+
+			state := store.state()
+			if state == nil {
+				return errors.New("couldn't find a BlockStoreState persisted in db")
+			}
+
+			var reqHeight int64
+			if height != "latest" {
+				reqHeight, err = strconv.ParseInt(height, 10, 64)
+				if err != nil {
+					return errors.New("invalid height, please provide an integer")
+				}
+				if reqHeight > state.Height {
+					return fmt.Errorf("invalid height, the latest height found in the db is %d, and you asked for %d", state.Height, reqHeight)
+				}
+			} else {
+				reqHeight = state.Height
+			}
+
+			block := store.block(reqHeight)
+
+			bz, err := json.Marshal(block)
 			if err != nil {
 				return err
 			}
 
-			blockStr, err := json.Marshal(block)
-			if err != nil {
-				return err
-			}
-
-			fmt.Println(string(blockStr))
+			fmt.Println(string(bz))
 
 			return nil
 		},
 	}
+
+	cmd.Flags().StringVar(&height, "height", "latest", "Block height to retrieve")
 	return cmd
-}
-
-func getLatestBlock(path string) (*types.Block, error) {
-	statedb, err := newStateStore(path)
-	if err != nil {
-		return nil,fmt.Errorf("new stateStore: %w", err)
-	}
-	_, height := statedb.loadBlockStoreState()
-	block := statedb.loadBlock(height)
-
-	return block, nil
 }
