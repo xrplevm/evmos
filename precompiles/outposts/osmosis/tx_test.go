@@ -32,13 +32,13 @@ func (s *PrecompileTestSuite) TestSwap() {
 		{
 			"test - check if erc20 contracts work",
 			func(sender, receiver sdk.AccAddress) []interface{} {
-				pairs := s.app.Erc20Keeper.GetTokenPairs(s.ctx)
-				fmt.Println(pairs)
+				path := NewTransferPath(s.chainA, s.chainB)
+				s.coordinator.Setup(path)
 				return []interface{}{
 					big.NewInt(1e18),
 					"cosmos1rhe5leyt5w0mcwd9rpp93zqn99yktsxv8kq5er",
-					common.HexToAddress("0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd"),
-					common.HexToAddress("0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDca"),
+					"aevmos",
+					"ibc/3A5B71F2AA11D24F9688A10D4279CE71560489D7A695364FC361EC6E09D02889",
 				}
 			},
 			func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {},

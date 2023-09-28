@@ -284,6 +284,7 @@ func (s *PrecompileTestSuite) NewTestChainWithValSet(coord *ibctesting.Coordinat
 	s.Require().NoError(err)
 	s.precompile = precompile
 
+	// TODO: This is setup needed for v1 of the Outpost
 	osmoMetadata := banktypes.Metadata{
 		Description: "The native token of Osmosis",
 		Base:        ibcBase,
