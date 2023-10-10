@@ -5,6 +5,10 @@ import (
 	"math/big"
 	"strings"
 
+	errorsmod "cosmossdk.io/errors"
+
+	"github.com/evmos/evmos/v14/precompiles/authorization"
+
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -150,6 +154,52 @@ func NewMsgTransfer(denom, memo string, amount *big.Int, sender common.Address) 
 	return msg, nil
 }
 
+// NewTransferAuthorization returns a new transfer authorization authz type from the given arguments.
+// Pre-populates the channel and port id to only work with Osmosis.
+func NewTransferAuthorization(args []interface{}) (common.Address, *transfertypes.TransferAuthorization, error) {
+	if len(args) != 3 {
+		return common.Address{}, nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	}
+
+	grantee, ok := args[0].(common.Address)
+	if !ok {
+		return common.Address{}, nil, fmt.Errorf(authorization.ErrInvalidGrantee, args[0])
+	}
+
+	spendLimit, ok := args[1].([]cmn.Coin)
+	if !ok {
+		return common.Address{}, nil, fmt.Errorf(cmn.ErrInvalidType, "spendLimit", cmn.Coin{}, args[1])
+	}
+
+	allowList, ok := args[2].([]string)
+	if !ok {
+		return common.Address{}, nil, fmt.Errorf(cmn.ErrInvalidType, "allowList", []string{}, args[2])
+	}
+
+	spendLimitCoins := make(sdk.Coins, len(spendLimit))
+	for is, sl := range spendLimit {
+		spendLimitCoins[is] = sdk.Coin{
+			Amount: math.NewIntFromBigInt(sl.Amount),
+			Denom:  sl.Denom,
+		}
+	}
+
+	allocations := make([]transfertypes.Allocation, 1)
+	allocations[0] = transfertypes.Allocation{
+		SourcePort:    transfertypes.PortID,
+		SourceChannel: OsmosisChannelID,
+		SpendLimit:    spendLimitCoins,
+		AllowList:     allowList,
+	}
+
+	transferAuthz := &transfertypes.TransferAuthorization{Allocations: allocations}
+	if err := transferAuthz.ValidateBasic(); err != nil {
+		return common.Address{}, nil, err
+	}
+
+	return grantee, transferAuthz, nil
+}
+
 // AccAddressFromBech32 creates an AccAddress from a Bech32 string.
 func AccAddressFromBech32(address string, bech32prefix string) (addr sdk.AccAddress, err error) {
 	if len(strings.TrimSpace(address)) == 0 {
@@ -167,4 +217,28 @@ func AccAddressFromBech32(address string, bech32prefix string) (addr sdk.AccAddr
 	}
 
 	return sdk.AccAddress(bz), nil
+}
+
+// checkAllowanceArgs checks the arguments for the Increase / Decrease Allowance function.
+func checkAllowanceArgs(args []interface{}) (common.Address, string, *big.Int, error) {
+	if len(args) != 3 {
+		return common.Address{}, "", nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
+	}
+
+	grantee, ok := args[0].(common.Address)
+	if !ok || grantee == (common.Address{}) {
+		return common.Address{}, "", nil, fmt.Errorf(authorization.ErrInvalidGrantee, args[0])
+	}
+
+	denom, ok := args[1].(string)
+	if !ok {
+		return common.Address{}, "", nil, errorsmod.Wrapf(transfertypes.ErrInvalidDenomForTransfer, cmn.ErrInvalidDenom, args[1])
+	}
+
+	amount, ok := args[4].(*big.Int)
+	if !ok || amount == nil {
+		return common.Address{}, "", nil, errorsmod.Wrapf(transfertypes.ErrInvalidAmount, cmn.ErrInvalidAmount, args[2])
+	}
+
+	return grantee, denom, amount, nil
 }
