@@ -280,7 +280,7 @@ func (s *PrecompileTestSuite) NewTestChainWithValSet(coord *ibctesting.Coordinat
 	s.app.FeeMarketKeeper.SetBlockGasWanted(s.ctx, 0)
 	s.app.FeeMarketKeeper.SetTransientBlockGasWanted(s.ctx, 0)
 
-	precompile, err := osmosis.NewPrecompile(s.app.TransferKeeper, s.app.AuthzKeeper, s.app.BankKeeper, s.app.Erc20Keeper)
+	precompile, err := osmosis.NewPrecompile(s.app.TransferKeeper, s.app.AuthzKeeper, s.app.BankKeeper, s.app.Erc20Keeper, s.app.IBCKeeper.ChannelKeeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 
@@ -384,7 +384,7 @@ func (s *PrecompileTestSuite) NewTransferAuthorization(ctx sdk.Context, app *evm
 
 // GetTransferAuthorization returns the transfer authorization for the given grantee and granter
 func (s *PrecompileTestSuite) GetTransferAuthorization(ctx sdk.Context, grantee, granter common.Address) *transfertypes.TransferAuthorization {
-	grant, _ := s.app.AuthzKeeper.GetAuthorization(ctx, grantee.Bytes(), granter.Bytes(), ics20.TransferMsg)
+	grant, _ := s.app.AuthzKeeper.GetAuthorization(ctx, grantee.Bytes(), granter.Bytes(), ics20.TransferMsgURL)
 	s.Require().NotNil(grant)
 	transferAuthz, ok := grant.(*transfertypes.TransferAuthorization)
 	s.Require().True(ok)
@@ -478,7 +478,7 @@ func (s *PrecompileTestSuite) setTransferApproval(
 
 	logCheckArgs := testutil.LogCheckArgs{
 		ABIEvents: s.precompile.Events,
-		ExpEvents: []string{ics20.EventTypeIBCTransferAuthorization},
+		ExpEvents: []string{authorization.EventTypeIBCTransferAuthorization},
 		ExpPass:   true,
 	}
 
@@ -488,7 +488,7 @@ func (s *PrecompileTestSuite) setTransferApproval(
 	s.chainA.NextBlock()
 
 	// check auth created successfully
-	authz, _ := s.app.AuthzKeeper.GetAuthorization(s.chainA.GetContext(), grantee.Bytes(), args.PrivKey.PubKey().Address().Bytes(), ics20.TransferMsg)
+	authz, _ := s.app.AuthzKeeper.GetAuthorization(s.chainA.GetContext(), grantee.Bytes(), args.PrivKey.PubKey().Address().Bytes(), ics20.TransferMsgURL)
 	Expect(authz).NotTo(BeNil())
 	transferAuthz, ok := authz.(*transfertypes.TransferAuthorization)
 	Expect(ok).To(BeTrue())
@@ -504,7 +504,7 @@ func (s *PrecompileTestSuite) setTransferApproval(
 func (s *PrecompileTestSuite) setTransferApprovalForContract(args contracts.CallArgs) {
 	logCheckArgs := testutil.LogCheckArgs{
 		ABIEvents: s.precompile.Events,
-		ExpEvents: []string{ics20.EventTypeIBCTransferAuthorization},
+		ExpEvents: []string{authorization.EventTypeIBCTransferAuthorization},
 		ExpPass:   true,
 	}
 
@@ -514,7 +514,7 @@ func (s *PrecompileTestSuite) setTransferApprovalForContract(args contracts.Call
 	s.chainA.NextBlock()
 
 	// check auth created successfully
-	authz, _ := s.app.AuthzKeeper.GetAuthorization(s.chainA.GetContext(), args.ContractAddr.Bytes(), args.PrivKey.PubKey().Address().Bytes(), ics20.TransferMsg)
+	authz, _ := s.app.AuthzKeeper.GetAuthorization(s.chainA.GetContext(), args.ContractAddr.Bytes(), args.PrivKey.PubKey().Address().Bytes(), ics20.TransferMsgURL)
 	Expect(authz).NotTo(BeNil())
 	transferAuthz, ok := authz.(*transfertypes.TransferAuthorization)
 	Expect(ok).To(BeTrue())

@@ -47,7 +47,6 @@ interface IOsmosisOutpost {
         address indexed receiver,
         uint256 amount,
         string baseDenom,
-        string outputDenom,
         string chainPrefix
     );
 
@@ -110,7 +109,7 @@ interface IOsmosisOutpost {
 
     /// @dev Decreases the allowance of a given grantee by a specific amount of tokens for for IBC transfer methods.
     /// @param grantee The address of the contract that is allowed to spend the granter's tokens.
-     /// @param denom the denomination of the Coin to be transferred to the receiver
+    /// @param denom the denomination of the Coin to be transferred to the receiver
     /// @param amount The amount of tokens to be spent.
     /// @return approved is true if the operation ran successfully
     function decreaseAllowance(
@@ -131,6 +130,7 @@ interface IOsmosisOutpost {
     function swap(
         address sender,
         uint256 amount,
+        string outputDenom,
         string calldata receiver,
         string calldata inputDenom,
         string calldata outputDenom

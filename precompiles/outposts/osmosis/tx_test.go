@@ -4,6 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 	"github.com/evmos/evmos/v14/precompiles/outposts/osmosis"
 	"math/big"
@@ -27,7 +28,41 @@ func (s *PrecompileTestSuite) TestSwap() {
 			func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {},
 			200000,
 			true,
-			fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 4, 0),
+			fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 5, 0),
+		},
+		{
+			"fail - invalid amount",
+			func(sender, receiver sdk.AccAddress) []interface{} {
+				return []interface{}{
+					s.address,
+					s.address,
+					"test",
+					sender.String(),
+					receiver.String(),
+				}
+			},
+			func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {},
+			200000,
+			true,
+			"invalid amount",
+		},
+		{
+			"fail - invalid bech32 address",
+			func(sender, receiver sdk.AccAddress) []interface{} {
+				path := NewTransferPath(s.chainA, s.chainB)
+				s.coordinator.Setup(path)
+				return []interface{}{
+					common.BytesToAddress(sender),
+					big.NewInt(1e18),
+					"random1rhe5leyt5w0mcwd9rpp93zqn99yktsxv8kq5er",
+					"aevmos",
+					"ibc/3A5B71F2AA11D24F9688A10D4279CE71560489D7A695364FC361EC6E09D02889",
+				}
+			},
+			func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {},
+			200000,
+			true,
+			"decoding bech32 failed: invalid checksum",
 		},
 		{
 			"test - check if erc20 contracts work",
@@ -35,6 +70,7 @@ func (s *PrecompileTestSuite) TestSwap() {
 				path := NewTransferPath(s.chainA, s.chainB)
 				s.coordinator.Setup(path)
 				return []interface{}{
+					s.address,
 					big.NewInt(1e18),
 					"cosmos1rhe5leyt5w0mcwd9rpp93zqn99yktsxv8kq5er",
 					"aevmos",
@@ -46,285 +82,6 @@ func (s *PrecompileTestSuite) TestSwap() {
 			false,
 			"",
 		},
-		//{
-		//	"fail - no transfer authorization",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(s.chainA.SenderAccount.GetAddress().Bytes()),
-		//			s.chainB.SenderAccount.GetAddress().String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//	},
-		//	200000,
-		//	true,
-		//	"does not exist",
-		//},
-		//{
-		//	"fail - channel does not exist",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		return []interface{}{
-		//			"port",
-		//			"channel-01",
-		//			utils.BaseDenom,
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(s.chainA.SenderAccount.GetAddress().Bytes()),
-		//			s.chainB.SenderAccount.GetAddress().String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//	},
-		//	200000,
-		//	true,
-		//	channeltypes.ErrChannelNotFound.Error(),
-		//},
-		//{
-		//	"fail - non authorized denom",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		err := s.NewTransferAuthorization(s.ctx, s.app, callingContractAddr, common.BytesToAddress(sender), path, defaultCoins, nil)
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			"uatom",
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(s.chainA.SenderAccount.GetAddress().Bytes()),
-		//			s.chainB.SenderAccount.GetAddress().String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//	},
-		//	200000,
-		//	true,
-		//	"requested amount is more than spend limit",
-		//},
-		//{
-		//	"fail - allowance is less than transfer amount",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		err := s.NewTransferAuthorization(s.ctx, s.app, callingContractAddr, common.BytesToAddress(sender), path, defaultCoins, nil)
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(2e18),
-		//			common.BytesToAddress(s.chainA.SenderAccount.GetAddress().Bytes()),
-		//			s.chainB.SenderAccount.GetAddress().String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//	},
-		//	200000,
-		//	true,
-		//	"requested amount is more than spend limit",
-		//},
-		//{
-		//	"fail - transfer 1 Evmos from chainA to chainB from somebody else's account",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		err := s.NewTransferAuthorization(s.ctx, s.app, common.BytesToAddress(sender), common.BytesToAddress(sender), path, defaultCoins, nil)
-		//		s.Require().NoError(err)
-		//		// fund another user's account
-		//		err = evmosutil.FundAccountWithBaseDenom(s.ctx, s.app.BankKeeper, differentAddress.Bytes(), amt)
-		//		s.Require().NoError(err)
-		//
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(amt),
-		//			common.BytesToAddress(differentAddress.Bytes()),
-		//			receiver.String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//		// The allowance is spent after the transfer thus the authorization is deleted
-		//		authz, _ := s.app.AuthzKeeper.GetAuthorization(s.ctx, sender, sender, ics20.TransferMsg)
-		//		transferAuthz := authz.(*transfertypes.TransferAuthorization)
-		//		s.Require().Equal(transferAuthz.Allocations[0].SpendLimit, defaultCoins)
-		//
-		//		// the balance on other user's account should remain unchanged
-		//		balance := s.app.BankKeeper.GetBalance(s.ctx, differentAddress.Bytes(), utils.BaseDenom)
-		//		s.Require().Equal(balance.Amount, sdk.NewInt(amt))
-		//		s.Require().Equal(balance.Denom, utils.BaseDenom)
-		//	},
-		//	200000,
-		//	true,
-		//	"does not exist",
-		//},
-		//{
-		//	"pass - transfer 1 Evmos from chainA to chainB and spend the entire allowance",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		err := s.NewTransferAuthorization(s.ctx, s.app, callingContractAddr, common.BytesToAddress(sender), path, defaultCoins, nil)
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(sender.Bytes()),
-		//			receiver.String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//		// Check allowance was deleted
-		//		authz, _ := s.app.AuthzKeeper.GetAuthorization(s.ctx, callingContractAddr.Bytes(), sender, ics20.TransferMsg)
-		//		s.Require().Nil(authz)
-		//
-		//		balance := s.app.BankKeeper.GetBalance(s.ctx, s.chainA.SenderAccount.GetAddress(), utils.BaseDenom)
-		//		s.Require().Equal(balance.Amount, sdk.NewInt(4e18))
-		//		s.Require().Equal(balance.Denom, utils.BaseDenom)
-		//	},
-		//	200000,
-		//	false,
-		//	"",
-		//},
-		//nolint:dupl
-		//{
-		//	"pass - transfer 1 Evmos from chainA to chainB and don't change the unlimited spending limit",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		err := s.NewTransferAuthorization(s.ctx, s.app, callingContractAddr, common.BytesToAddress(sender), path, maxUint256Coins, nil)
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(sender.Bytes()),
-		//			receiver.String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//		// The allowance is spent after the transfer thus the authorization is deleted
-		//		authz, _ := s.app.AuthzKeeper.GetAuthorization(s.ctx, callingContractAddr.Bytes(), sender, ics20.TransferMsg)
-		//		transferAuthz := authz.(*transfertypes.TransferAuthorization)
-		//		s.Require().Equal(transferAuthz.Allocations[0].SpendLimit, maxUint256Coins)
-		//
-		//		balance := s.app.BankKeeper.GetBalance(s.ctx, s.chainA.SenderAccount.GetAddress(), utils.BaseDenom)
-		//		s.Require().Equal(balance.Amount, sdk.NewInt(4e18))
-		//		s.Require().Equal(balance.Denom, utils.BaseDenom)
-		//	},
-		//	200000,
-		//	false,
-		//	"",
-		//},
-		//nolint:dupl
-		//{
-		//	"pass - transfer 1 Evmos from chainA to chainB and only change 1 spend limit",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		err := s.NewTransferAuthorization(s.ctx, s.app, callingContractAddr, common.BytesToAddress(sender), path, mutliSpendLimit, nil)
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(sender.Bytes()),
-		//			receiver.String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//		// The allowance is spent after the transfer thus the authorization is deleted
-		//		authz, _ := s.app.AuthzKeeper.GetAuthorization(s.ctx, callingContractAddr.Bytes(), sender, ics20.TransferMsg)
-		//		transferAuthz := authz.(*transfertypes.TransferAuthorization)
-		//		s.Require().Equal(transferAuthz.Allocations[0].SpendLimit, atomCoins)
-		//
-		//		balance := s.app.BankKeeper.GetBalance(s.ctx, s.chainA.SenderAccount.GetAddress(), utils.BaseDenom)
-		//		s.Require().Equal(balance.Amount, sdk.NewInt(4e18))
-		//		s.Require().Equal(balance.Denom, utils.BaseDenom)
-		//	},
-		//	200000,
-		//	false,
-		//	"",
-		//},
-		//{
-		//	"pass - transfer 1 Evmos from chainA to chainB and only change 1 spend limit for the associated allocation",
-		//	func(sender, receiver sdk.AccAddress) []interface{} {
-		//		path := NewTransferPath(s.chainA, s.chainB)
-		//		s.coordinator.Setup(path)
-		//		allocations := []transfertypes.Allocation{
-		//			{
-		//				SourcePort:    "port-01",
-		//				SourceChannel: "channel-03",
-		//				SpendLimit:    atomCoins,
-		//				AllowList:     nil,
-		//			},
-		//			{
-		//				SourcePort:    path.EndpointA.ChannelConfig.PortID,
-		//				SourceChannel: path.EndpointA.ChannelID,
-		//				SpendLimit:    defaultCoins,
-		//				AllowList:     nil,
-		//			},
-		//		}
-		//		err := s.NewTransferAuthorizationWithAllocations(s.ctx, s.app, callingContractAddr, common.BytesToAddress(sender), allocations)
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			path.EndpointA.ChannelConfig.PortID,
-		//			path.EndpointA.ChannelID,
-		//			utils.BaseDenom,
-		//			big.NewInt(1e18),
-		//			common.BytesToAddress(sender.Bytes()),
-		//			receiver.String(),
-		//			s.chainB.GetTimeoutHeight(),
-		//			uint64(0),
-		//			"memo",
-		//		}
-		//	},
-		//	func(sender, receiver sdk.AccAddress, data []byte, inputArgs []interface{}) {
-		//		// The allowance is spent after the transfer thus the authorization is deleted
-		//		authz, _ := s.app.AuthzKeeper.GetAuthorization(s.ctx, callingContractAddr.Bytes(), sender, ics20.TransferMsg)
-		//		transferAuthz := authz.(*transfertypes.TransferAuthorization)
-		//		s.Require().Equal(transferAuthz.Allocations[0].SpendLimit, atomCoins)
-		//
-		//		balance := s.app.BankKeeper.GetBalance(s.ctx, s.chainA.SenderAccount.GetAddress(), utils.BaseDenom)
-		//		s.Require().Equal(balance.Amount, sdk.NewInt(4e18))
-		//		s.Require().Equal(balance.Denom, utils.BaseDenom)
-		//	},
-		//	200000,
-		//	false,
-		//	"",
-		//},
 	}
 
 	for _, tc := range testCases {
@@ -334,7 +91,7 @@ func (s *PrecompileTestSuite) TestSwap() {
 			sender := s.chainA.SenderAccount.GetAddress()
 			receiver := s.chainB.SenderAccount.GetAddress()
 
-			//contract := vm.NewContract(vm.AccountRef(common.BytesToAddress(sender)), s.precompile, big.NewInt(0), tc.gas)
+			contract := vm.NewContract(vm.AccountRef(common.BytesToAddress(sender)), s.precompile, big.NewInt(0), tc.gas)
 
 			s.ctx = s.ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
 			initialGas := s.ctx.GasMeter().GasConsumed()
@@ -342,9 +99,7 @@ func (s *PrecompileTestSuite) TestSwap() {
 
 			args := tc.malleate(sender, receiver)
 
-			// set the caller address to be another address (so we can test the authorization logic)
-			//contract.CallerAddress = callingContractAddr
-			bz, err := s.precompile.Swap(s.ctx, common.BytesToAddress(sender), s.stateDB, &method, args)
+			bz, err := s.precompile.Swap(s.ctx, common.BytesToAddress(sender), contract, s.stateDB, &method, args)
 
 			if tc.expError {
 				s.Require().ErrorContains(err, tc.errContains)
