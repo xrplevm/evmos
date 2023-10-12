@@ -5,7 +5,11 @@ package ics20
 
 import (
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"math/big"
+	"time"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -225,6 +229,73 @@ func NewDenomHashRequest(args []interface{}) (*transfertypes.QueryDenomHashReque
 	}
 
 	return req, nil
+}
+
+// CheckOriginAndSender ensures the correct sender is being used.
+func CheckOriginAndSender(contract *vm.Contract, origin common.Address, sender common.Address) (common.Address, error) {
+	if contract.CallerAddress == sender {
+		return origin, nil
+	} else if origin != sender {
+		return common.Address{}, fmt.Errorf(ErrDifferentOriginFromSender, origin.String(), sender.String())
+	}
+	return sender, nil
+}
+
+// CheckAndAcceptAuthorizationIfNeeded checks if authorization exists and accepts the grant.
+func CheckAndAcceptAuthorizationIfNeeded(
+	ctx sdk.Context,
+	contract *vm.Contract,
+	origin common.Address,
+	authzKeeper authzkeeper.Keeper,
+	msg *transfertypes.MsgTransfer,
+) (*authz.AcceptResponse, *time.Time, error) {
+	if contract.CallerAddress == origin {
+		return nil, nil, nil
+	}
+
+	auth, expiration, err := authorization.CheckAuthzExists(ctx, authzKeeper, contract.CallerAddress, origin, TransferMsgURL)
+	if err != nil {
+		return nil, nil, fmt.Errorf(authorization.ErrAuthzDoesNotExistOrExpired, contract.CallerAddress, origin)
+	}
+
+	resp, err := AcceptGrant(ctx, contract.CallerAddress, origin, msg, auth)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return resp, expiration, nil
+}
+
+// UpdateGrantIfNeeded updates the grant if needed.
+func UpdateGrantIfNeeded(ctx sdk.Context, contract *vm.Contract, authzKeeper authzkeeper.Keeper, origin common.Address, expiration *time.Time, resp *authz.AcceptResponse) error {
+	if contract.CallerAddress != origin {
+		return UpdateGrant(ctx, authzKeeper, contract.CallerAddress, origin, expiration, resp)
+	}
+	return nil
+}
+
+// convertToAllocation converts the transfer types Allocation to the ICS20 Allocation.
+func convertToAllocation(allocs []transfertypes.Allocation) []Allocation {
+	// Convert to Allocations to emit the IBC transfer authorization event
+	allocations := make([]Allocation, len(allocs))
+	for i, allocation := range allocs {
+		spendLimit := make([]cmn.Coin, len(allocation.SpendLimit))
+		for j, coin := range allocation.SpendLimit {
+			spendLimit[j] = cmn.Coin{
+				Denom:  coin.Denom,
+				Amount: coin.Amount.BigInt(),
+			}
+		}
+
+		allocations[i] = Allocation{
+			SourcePort:    allocation.SourcePort,
+			SourceChannel: allocation.SourceChannel,
+			SpendLimit:    spendLimit,
+			AllowList:     allocation.AllowList,
+		}
+	}
+
+	return allocations
 }
 
 // checkRevokeArgs checks if the given arguments are valid for the Revoke tx.
