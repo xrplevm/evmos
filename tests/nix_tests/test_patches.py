@@ -100,6 +100,8 @@ def test_send_funds_to_distr_mod_eth_tx(evmos):
     wait_for_new_blocks(cli, 2)
     # only fees should be deducted from sender balance
     fees = receipt["gasUsed"] * receipt["effectiveGasPrice"]
+    assert fees > 0
+    
     new_src_balance = cli.balance(eth_to_bech32(sender))
     assert old_src_balance - fees == new_src_balance
 
