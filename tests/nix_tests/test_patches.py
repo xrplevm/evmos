@@ -100,7 +100,6 @@ def test_send_funds_to_distr_mod_eth_tx(evmos):
     wait_for_new_blocks(cli, 2)
     fees = receipt["gasUsed"] * receipt["effectiveGasPrice"]
     new_src_balance = cli.balance(eth_to_bech32(sender))
-    print(old_src_balance - new_src_balance)
     assert old_src_balance - fees == new_src_balance
 
 
