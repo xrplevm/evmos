@@ -144,7 +144,7 @@ func (s *PrecompileTestSuite) NewTestChainWithValSet(coord *ibctesting.Coordinat
 	channelID := "channel-0"
 	osmosisXCSContract := "address" 
 
-	precompile, err := osmosis.NewPrecompile(portID, channelID, osmosisXCSContract, s.app.TransferKeeper, s.app.AuthzKeeper, s.app.BankKeeper, s.app.Erc20Keeper, s.app.Ch)
+	precompile, err := osmosis.NewPrecompile(portID, channelID, osmosisXCSContract, s.app.TransferKeeper, s.app.AuthzKeeper, s.app.BankKeeper, s.app.Erc20Keeper)
 	s.Require().NoError(err)
 	s.precompile = precompile
 
@@ -152,7 +152,6 @@ func (s *PrecompileTestSuite) NewTestChainWithValSet(coord *ibctesting.Coordinat
 	evmtypes.RegisterQueryServer(queryHelperEvm, s.app.EvmKeeper)
 	s.queryClientEVM = evmtypes.NewQueryClient(queryHelperEvm)
 
-	// create an account to send transactions from
 	chain := &ibctesting.TestChain{
 		T:              s.T(),
 		Coordinator:    coord,
@@ -277,8 +276,6 @@ func (s *PrecompileTestSuite) SetupWithGenesisValSet(valSet *tmtypes.ValidatorSe
 }
 
 
-
-
 // NewPrecompileContract creates a new precompile contract and sets the gas meter
 func (s *PrecompileTestSuite) NewPrecompileContract(gas uint64) *vm.Contract {
 	contract := vm.NewContract(vm.AccountRef(s.address), s.precompile, big.NewInt(0), gas)
@@ -297,7 +294,6 @@ func (s *PrecompileTestSuite) NewTransferAuthorizationWithAllocations(ctx sdk.Co
 		return err
 	}
 
-	// create the authorization
 	return app.AuthzKeeper.SaveGrant(ctx, grantee.Bytes(), granter.Bytes(), transferAuthz, &s.defaultExpirationDuration)
 }
 
@@ -317,7 +313,6 @@ func (s *PrecompileTestSuite) NewTransferAuthorization(ctx sdk.Context, app *evm
 		return err
 	}
 
-	// create the authorization
 	return app.AuthzKeeper.SaveGrant(ctx, grantee.Bytes(), granter.Bytes(), transferAuthz, &s.defaultExpirationDuration)
 }
 
