@@ -15,6 +15,8 @@ func TestCreateMemo(t *testing.T) {
 		outputDenom string
 		receiver    string
 		contract	string
+		slippage_percentage string
+		window_seconds int64
 		expPass     bool
 		errContains string
 	}{
@@ -23,6 +25,8 @@ func TestCreateMemo(t *testing.T) {
 			outputDenom: "uosmo",
 			receiver: "receiveraddress",
 			contract: "xcscontract",
+			slippage_percentage: "5",
+			window_seconds: 10,
 			expPass:  true,
 		},
 	}
@@ -33,7 +37,7 @@ func TestCreateMemo(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			memo, err := osmosisoutpost.CreateMemo(tc.outputDenom, tc.receiver, tc.contract)
+			memo, err := osmosisoutpost.CreateMemo(tc.outputDenom, tc.receiver, tc.contract, tc.slippage_percentage, tc.window_seconds)
 			if tc.expPass {
 				require.NoError(t, err, "expected no error while creating memo")
 				require.NotEmpty(t, memo, "expected memo not to be empty")
