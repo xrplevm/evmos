@@ -6,7 +6,6 @@ import (
 	"log"
 	"math/big"
 	"slices"
-	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
@@ -16,10 +15,20 @@ import (
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 )
 
+
 const (
-	// max_slippage is the max allowed slippage allowed by the outpost. This bound
-	// is a safety measure for users.
-	MaxSlippage uint64 = 20
+	// DefaultSlippagePercentage is the default value of the slippage
+	// percentage used.
+	DefaultSlippagePercentage uint64 = 5
+	// DefaultWindowSeconds is the default value of the window 
+	// seconds used.	
+	DefaultWindowSeconds uint64     = 30
+
+	// MaxSlippagePercentage is the max slippage percentage allowed by the outpost. 
+	// This bound is a safety measure for users.
+	MaxSlippagePercentage uint64     = 20
+	// MaxWindowSeconds is the max window in seconds allowed by the outpost. 
+	// This bound is a safety measure for users.
 	MaxWindowSeconds int64 = 60
 )
 
@@ -56,24 +65,6 @@ type Memo struct {
 
 type RawPacketMetadata struct {
 	Memo Memo `json:"memo"`
-}
-
-// validate is used to validate data used to create the memo:
-// - SlippagePercentage cannot be higher than max_slippage.
-func (r RawPacketMetadata) validate() error {
-	slippage, err := strconv.ParseUint(r.Memo.Msg.OsmosisSwap.Slippage.Twap.SlippagePercentage,10, 64)
-	if err != nil {
-		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
-	}
-
-	if slippage > MaxSlippage {
-		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
-	}
-
-	if r.Memo.Msg.OsmosisSwap.Slippage.Twap.WindowSeconds > MaxSlippage {
-		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
-	}
-	return nil
 }
 
 // CreateMemo build the required memo to perform a swap on the Osmosis chain. This function requires
@@ -146,7 +137,6 @@ func ParseSwapPacketData(args []interface{}) (sender common.Address, input commo
 
 // validateSwap performs validation on input and output denom.
 func ValidateSwap(
-	ctx sdk.Context,
 	portID,
 	channelID,
 	input,
@@ -155,7 +145,6 @@ func ValidateSwap(
 	slippage_percentage,
 	window_seconds uint64,
 ) (err error) {
-	// input and output cannot be equal
 	if input == output {
 		return fmt.Errorf("input and output token cannot be the same: %s", input)
 	}
@@ -170,8 +159,8 @@ func ValidateSwap(
 		return fmt.Errorf(ErrInputTokenNotSupported, validInput)
 	}
 
-	if slippage_percentage > MaxSlippage {
-		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
+	if slippage_percentage > MaxSlippagePercentage {
+		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippagePercentage)	
 	}
 
 	if window_seconds > uint64(MaxWindowSeconds) {

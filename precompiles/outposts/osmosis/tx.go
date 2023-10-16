@@ -17,12 +17,6 @@ const (
 	SwapMethod = "swap"
 )
 
-// Constants used during memo creation
-const (
-	slippage_percentage uint64 = 5
-	window_seconds uint64 = 30
-)
-
 // Swap swaps the given base denom for the given target denom on Osmosis and returns
 // the newly swapped tokens to the receiver address.
 func (p Precompile) Swap(
@@ -54,7 +48,7 @@ func (p Precompile) Swap(
 
 	bondDenom := p.stakingKeeper.GetParams(ctx).BondDenom
 
-	err = ValidateSwap(ctx, p.portID, p.channelID, inputDenom, outputDenom, bondDenom, slippage_percentage, window_seconds)
+	err = ValidateSwap(p.portID, p.channelID, inputDenom, outputDenom, bondDenom, DefaultSlippagePercentage, DefaultWindowSeconds)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +64,7 @@ func (p Precompile) Swap(
 	}
 
 	// Create the memo field for the Swap from the JSON file
-	memo, err := CreateMemo(outputDenom, receiver, p.osmosisXCSContract, fmt.Sprint(slippage_percentage), window_seconds)
+	memo, err := CreateMemo(outputDenom, receiver, p.osmosisXCSContract, fmt.Sprint(DefaultSlippagePercentage), DefaultWindowSeconds)
 	if err != nil {
 		return nil, err
 	}

@@ -48,3 +48,50 @@ func TestCreateMemo(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateSwap(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name string
+		portID string
+		channelID string
+		input string
+		output string
+		stakingDenom string
+		slippagePercentage uint64
+		windowSeconds uint64
+		expPass     bool
+		errContains string
+	}{
+		{
+			name:     "fail - input and outp cannot be the same",
+			portID: "transfer",
+			channelID: "channel-0",
+			input: "aevmos",
+			output: "aevmos",
+			stakingDenom: "aevmos",
+			slippagePercentage: osmosisoutpost.DefaultSlippagePercentage,
+			windowSeconds: osmosisoutpost.DefaultWindowSeconds,
+			expPass:  false,
+			errContains: "input and output token cannot be the same",
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := osmosisoutpost.ValidateSwap(tc.portID, tc.channelID, tc.input, tc.output, tc.stakingDenom, tc.slippagePercentage, tc.windowSeconds)
+			if tc.expPass {
+				require.NoError(t, err, "expected no error while creating memo")
+				require.NotEmpty(t, "expected memo not to be empty")
+			} else {
+				require.Error(t, err, "expected error while creating memo")
+				require.Contains(t, err.Error(), tc.errContains, "expected different error")
+			}
+		})
+	}	
+}
