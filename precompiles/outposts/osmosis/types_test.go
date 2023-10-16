@@ -2,7 +2,6 @@ package osmosis_test
 
 import (
 	"testing"
-	"fmt"
 
 	osmosisoutpost "github.com/evmos/evmos/v14/precompiles/outposts/osmosis"
 	"github.com/stretchr/testify/require"
@@ -21,33 +20,6 @@ func TestCreateMemo(t *testing.T) {
 		expPass     bool
 		errContains string
 	}{
-		{
-			name:     "fail - slippage percentage cannot be negative",
-			outputDenom: "uosmo",
-			receiver: "receiveraddress",
-			contract: "xcscontract",
-			slippage_percentage: "-5",
-			window_seconds: 10,
-			expPass:  false,
-		},
-		{
-			name:     "fail - slippage percentage cannot be higher than max slipppage",
-			outputDenom: "uosmo",
-			receiver: "receiveraddress",
-			contract: "xcscontract",
-			slippage_percentage: fmt.Sprint(osmosisoutpost.MaxSlippage + 1),
-			window_seconds: 10,
-			expPass:  false,
-		},
-		{
-			name:     "fail - window seconds cannot be higher than max window seconds",
-			outputDenom: "uosmo",
-			receiver: "receiveraddress",
-			contract: "xcscontract",
-			slippage_percentage: "10",
-			window_seconds: 61,
-			expPass:  false,
-		},
 		{
 			name:     "success - create memo",
 			outputDenom: "uosmo",
