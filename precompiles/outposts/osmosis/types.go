@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/big"
 	"slices"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
@@ -15,9 +16,21 @@ import (
 	cmn "github.com/evmos/evmos/v14/precompiles/common"
 )
 
+const (
+	// max_slippage is the max allowed slippage allowed by the outpost. This bound
+	// is a safety measure for users.
+	MaxSlippage uint64 = 20
+	MaxWindowSeconds int64 = 60
+)
+
+const (
+	OutpostName = "osmosis-outpost"
+)
+
+
 type Twap struct {
 	SlippagePercentage string `json:"slippage_percentage"`
-	WindowSeconds      int64 `json:"window_seconds"`
+	WindowSeconds      uint64 `json:"window_seconds"`
 }
 
 type Slippage struct {
@@ -45,7 +58,27 @@ type RawPacketMetadata struct {
 	Memo Memo `json:"memo"`
 }
 
-func CreateMemo(outputDenom, receiver, contract, slippage_percentage string, window_seconds int64) (string, error) {
+// validate is used to validate data used to create the memo:
+// - SlippagePercentage cannot be higher than max_slippage.
+func (r RawPacketMetadata) validate() error {
+	slippage, err := strconv.ParseUint(r.Memo.Msg.OsmosisSwap.Slippage.Twap.SlippagePercentage,10, 64)
+	if err != nil {
+		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
+	}
+
+	if slippage > MaxSlippage {
+		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
+	}
+
+	if r.Memo.Msg.OsmosisSwap.Slippage.Twap.WindowSeconds > MaxSlippage {
+		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
+	}
+	return nil
+}
+
+// CreateMemo build the required memo to perform a swap on the Osmosis chain. This function requires
+// that the input data has been precedently validated.
+func CreateMemo(outputDenom, receiver, contract, slippage_percentage string, window_seconds uint64) (string, error) {
 	data := &RawPacketMetadata{
 		Memo{
 			Contract: contract,
@@ -119,6 +152,8 @@ func ValidateSwap(
 	input,
 	output,
 	stakingDenom string,
+	slippage_percentage,
+	window_seconds uint64,
 ) (err error) {
 	// input and output cannot be equal
 	if input == output {
@@ -133,6 +168,14 @@ func ValidateSwap(
 	validInput := []string{stakingDenom, osmoIBCDenom}
 	if !slices.Contains(validInput, input) {
 		return fmt.Errorf(ErrInputTokenNotSupported, validInput)
+	}
+
+	if slippage_percentage > MaxSlippage {
+		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxSlippage)	
+	}
+
+	if window_seconds > uint64(MaxWindowSeconds) {
+		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxWindowSeconds)	
 	}
 
 	return nil

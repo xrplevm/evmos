@@ -3,9 +3,6 @@
 
 package osmosis
 
-const (
-	OutpostName = "osmosis-outpost"
-)
 
 var (
 	// ErrTokenPairNotFound is raised when a token pair for a certain address
@@ -14,5 +11,8 @@ var (
 	// ErrInputTokenNotSupported is raised when a the osmosis outpost receive a non supported
 	// input token for the swap.
 	ErrInputTokenNotSupported = "input not supported, supported tokens: %v"
+	// ErrInvalidSlippagePercentage is raised when the slippage percentage is higher than a pre-defined value.
+	ErrInvalidSlippagePercentage = "slippage percentage must be a value between 0 and %s"
+	// ErrInvalidWindowSeconds is raised when the window seconds is higher than a pre-defined value.
+	ErrInvalidWindowSeconds = "window seconds must be a value between 0 and %s"
 )
-
