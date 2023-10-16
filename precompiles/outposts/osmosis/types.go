@@ -29,7 +29,7 @@ const (
 	MaxSlippagePercentage uint64     = 20
 	// MaxWindowSeconds is the max window in seconds allowed by the outpost. 
 	// This bound is a safety measure for users.
-	MaxWindowSeconds int64 = 60
+	MaxWindowSeconds uint64 = 60
 )
 
 const (
@@ -164,7 +164,7 @@ func ValidateSwap(
 	}
 
 	if window_seconds > uint64(MaxWindowSeconds) {
-		return fmt.Errorf(ErrInvalidSlippagePercentage, MaxWindowSeconds)	
+		return fmt.Errorf(ErrInvalidWindowSeconds, MaxWindowSeconds)	
 	}
 
 	return nil

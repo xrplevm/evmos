@@ -12,7 +12,7 @@ var (
 	// input token for the swap.
 	ErrInputTokenNotSupported = "input not supported, supported tokens: %v"
 	// ErrInvalidSlippagePercentage is raised when the slippage percentage is higher than a pre-defined value.
-	ErrInvalidSlippagePercentage = "slippage percentage must be a value between 0 and %s"
+	ErrInvalidSlippagePercentage = "slippage percentage must be a value between 0 and %d"
 	// ErrInvalidWindowSeconds is raised when the window seconds is higher than a pre-defined value.
-	ErrInvalidWindowSeconds = "window seconds must be a value between 0 and %s"
+	ErrInvalidWindowSeconds = "window seconds must be a value between 0 and %d"
 )
