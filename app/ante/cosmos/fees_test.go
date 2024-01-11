@@ -83,52 +83,6 @@ func (suite *AnteTestSuite) TestDeductFeeDecorator() {
 			},
 		},
 		{
-			name:        "pass - insufficient funds but sufficient staking rewards",
-			balance:     zero,
-			rewards:     []math.Int{initBalance},
-			gas:         10_000_000,
-			checkTx:     false,
-			simulate:    false,
-			expPass:     true,
-			errContains: "",
-			postCheck: func() {
-				// the balance should have increased
-				balance := suite.app.BankKeeper.GetBalance(suite.ctx, addr, utils.BaseDenom)
-				suite.Require().False(
-					balance.Amount.IsZero(),
-					"expected balance to have increased after withdrawing a surplus amount of staking rewards",
-				)
-
-				// the rewards should all have been withdrawn
-				rewards, err := testutil.GetTotalDelegationRewards(suite.ctx, suite.app.DistrKeeper, addr)
-				suite.Require().NoError(err, "failed to get total delegation rewards")
-				suite.Require().Empty(rewards, "expected all rewards to be withdrawn")
-			},
-		},
-		{
-			name:        "fail - insufficient funds and insufficient staking rewards",
-			balance:     sdk.NewInt(1e5),
-			rewards:     []math.Int{sdk.NewInt(1e5)},
-			gas:         10_000_000,
-			checkTx:     false,
-			simulate:    false,
-			expPass:     false,
-			errContains: "insufficient funds and failed to claim sufficient staking rewards",
-			postCheck: func() {
-				// the balance should not have changed
-				balance := suite.app.BankKeeper.GetBalance(suite.ctx, addr, utils.BaseDenom)
-				suite.Require().Equal(sdk.NewInt(1e5), balance.Amount, "expected balance to be unchanged")
-
-				// the rewards should not have changed
-				rewards, err := testutil.GetTotalDelegationRewards(suite.ctx, suite.app.DistrKeeper, addr)
-				suite.Require().NoError(err, "failed to get total delegation rewards")
-				suite.Require().Equal(
-					sdk.NewDecCoins(sdk.NewDecCoin(utils.BaseDenom, sdk.NewInt(1e5))),
-					rewards,
-					"expected rewards to be unchanged")
-			},
-		},
-		{
 			name:        "fail - sufficient balance to pay fees but provided fees < required fees",
 			balance:     initBalance,
 			rewards:     []math.Int{zero},
@@ -269,7 +223,7 @@ func (suite *AnteTestSuite) TestDeductFeeDecorator() {
 
 				// remove the feegrant keeper from the decorator
 				dfd = cosmosante.NewDeductFeeDecorator(
-					suite.app.AccountKeeper, suite.app.BankKeeper, suite.app.DistrKeeper, nil, suite.app.StakingKeeper, nil,
+					suite.app.AccountKeeper, suite.app.BankKeeper, nil, nil,
 				)
 			},
 		},

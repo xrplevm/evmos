@@ -131,7 +131,7 @@ func (suite *AnteTestSuite) setupDeductFeeDecoratorTestCase(addr sdk.AccAddress,
 
 	// Create a new DeductFeeDecorator
 	dfd := cosmosante.NewDeductFeeDecorator(
-		suite.app.AccountKeeper, suite.app.BankKeeper, suite.app.DistrKeeper, suite.app.FeeGrantKeeper, suite.app.StakingKeeper, nil,
+		suite.app.AccountKeeper, suite.app.BankKeeper, suite.app.FeeGrantKeeper, nil,
 	)
 
 	// prepare the testcase

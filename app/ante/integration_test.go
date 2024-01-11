@@ -119,18 +119,5 @@ var _ = Describe("when sending a Cosmos transaction", func() {
 			s.ctx, err = testutil.CommitAndCreateNewCtx(s.ctx, s.app, time.Second*0, nil)
 			Expect(err).To(BeNil())
 		})
-
-		It("should withdraw enough staking rewards to cover the transaction cost", func() {
-			rewards, err := testutil.GetTotalDelegationRewards(s.ctx, s.app.DistrKeeper, addr)
-			Expect(err).To(BeNil())
-			Expect(rewards).To(Equal(sdk.NewDecCoins(sdk.NewDecCoin(utils.BaseDenom, rewardsAmt))))
-
-			balance := s.app.BankKeeper.GetBalance(s.ctx, addr, utils.BaseDenom)
-			Expect(balance.Amount).To(Equal(sdk.NewInt(0)))
-
-			res, err := testutil.DeliverTx(s.ctx, s.app, priv, nil, msg)
-			Expect(res.IsOK()).To(BeTrue())
-			Expect(err).To(BeNil())
-		})
 	})
 })

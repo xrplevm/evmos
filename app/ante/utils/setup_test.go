@@ -95,17 +95,15 @@ func (suite *AnteTestSuite) SetupTest() {
 	suite.Require().NotNil(suite.app.AppCodec())
 
 	anteHandler := ante.NewAnteHandler(ante.HandlerOptions{
-		Cdc:                suite.app.AppCodec(),
-		AccountKeeper:      suite.app.AccountKeeper,
-		BankKeeper:         suite.app.BankKeeper,
-		DistributionKeeper: suite.app.DistrKeeper,
-		EvmKeeper:          suite.app.EvmKeeper,
-		FeegrantKeeper:     suite.app.FeeGrantKeeper,
-		IBCKeeper:          suite.app.IBCKeeper,
-		StakingKeeper:      suite.app.StakingKeeper,
-		FeeMarketKeeper:    suite.app.FeeMarketKeeper,
-		SignModeHandler:    encodingConfig.TxConfig.SignModeHandler(),
-		SigGasConsumer:     ante.SigVerificationGasConsumer,
+		Cdc:             suite.app.AppCodec(),
+		AccountKeeper:   suite.app.AccountKeeper,
+		BankKeeper:      suite.app.BankKeeper,
+		EvmKeeper:       suite.app.EvmKeeper,
+		FeegrantKeeper:  suite.app.FeeGrantKeeper,
+		IBCKeeper:       suite.app.IBCKeeper,
+		FeeMarketKeeper: suite.app.FeeMarketKeeper,
+		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
+		SigGasConsumer:  ante.SigVerificationGasConsumer,
 	})
 
 	suite.anteHandler = anteHandler

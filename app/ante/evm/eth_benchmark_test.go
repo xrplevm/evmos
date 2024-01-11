@@ -21,7 +21,7 @@ func BenchmarkEthGasConsumeDecorator(b *testing.B) {
 	s.SetT(&testing.T{})
 	s.SetupTest()
 
-	dec := ethante.NewEthGasConsumeDecorator(s.app.BankKeeper, s.app.DistrKeeper, s.app.EvmKeeper, s.app.StakingKeeper, config.DefaultMaxTxGasWanted)
+	dec := ethante.NewEthGasConsumeDecorator(s.app.BankKeeper, s.app.EvmKeeper, config.DefaultMaxTxGasWanted)
 
 	args := &evmtypes.EvmTxArgs{
 		ChainID:  s.app.EvmKeeper.ChainID(),
