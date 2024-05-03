@@ -39,6 +39,7 @@ type HandlerOptions struct {
 	MaxTxGasWanted         uint64
 	TxFeeChecker           anteutils.TxFeeChecker
 	ExtraDecorator         sdk.AnteDecorator
+	AuthzDisabledMsgTypes  []string
 }
 
 // Validate checks if the keepers are defined
@@ -99,8 +100,11 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		cosmosante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
 		cosmosante.NewAuthzLimiterDecorator( // disable the Msg types that cannot be included on an authz.MsgExec msgs field
-			sdk.MsgTypeURL(&evmtypes.MsgEthereumTx{}),
-			sdk.MsgTypeURL(&sdkvesting.MsgCreateVestingAccount{}),
+			append(
+				options.AuthzDisabledMsgTypes,
+				sdk.MsgTypeURL(&sdkvesting.MsgCreateVestingAccount{}),
+				sdk.MsgTypeURL(&evmtypes.MsgEthereumTx{}),
+			)...,
 		),
 		ante.NewSetUpContextDecorator(),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
@@ -127,8 +131,11 @@ func newLegacyCosmosAnteHandlerEip712(options HandlerOptions) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		cosmosante.RejectMessagesDecorator{}, // reject MsgEthereumTxs
 		cosmosante.NewAuthzLimiterDecorator( // disable the Msg types that cannot be included on an authz.MsgExec msgs field
-			sdk.MsgTypeURL(&evmtypes.MsgEthereumTx{}),
-			sdk.MsgTypeURL(&sdkvesting.MsgCreateVestingAccount{}),
+			append(
+				options.AuthzDisabledMsgTypes,
+				sdk.MsgTypeURL(&evmtypes.MsgEthereumTx{}),
+				sdk.MsgTypeURL(&sdkvesting.MsgCreateVestingAccount{}),
+			)...,
 		),
 		ante.NewSetUpContextDecorator(),
 		ante.NewValidateBasicDecorator(),
