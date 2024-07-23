@@ -16,7 +16,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/consensus/misc"
+	"github.com/ethereum/go-ethereum/consensus/misc/eip1559"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -125,7 +125,8 @@ func (b *Backend) processBlock(
 		if err != nil {
 			return err
 		}
-		targetOneFeeHistory.NextBaseFee = misc.CalcBaseFee(cfg, header)
+		// TODO: Review this
+		targetOneFeeHistory.NextBaseFee = eip1559.CalcBaseFee(cfg, header)
 	} else {
 		targetOneFeeHistory.NextBaseFee = new(big.Int)
 	}
