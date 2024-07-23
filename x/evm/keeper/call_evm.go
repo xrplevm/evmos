@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/evmos/evmos/v19/server/config"
 	"github.com/evmos/evmos/v19/x/evm/types"
@@ -75,19 +76,20 @@ func (k Keeper) CallEVMWithData(
 		gasCap = gasRes.Gas
 	}
 
-	msg := ethtypes.NewMessage(
-		from,
-		contract,
-		nonce,
-		big.NewInt(0), // amount
-		gasCap,        // gasLimit
-		big.NewInt(0), // gasFeeCap
-		big.NewInt(0), // gasTipCap
-		big.NewInt(0), // gasPrice
-		data,
-		ethtypes.AccessList{}, // AccessList
-		!commit,               // isFake
-	)
+	// TODO: Review this
+	msg := core.Message{
+		From: from,
+		To: contract,
+		Nonce: nonce,
+		Value: big.NewInt(0), // amount
+		GasLimit: gasCap,        // gasLimit
+		GasFeeCap: big.NewInt(0), // gasFeeCap
+		GasTipCap: big.NewInt(0), // gasTipCap
+		GasPrice: big.NewInt(0), // gasPrice
+		Data: data,
+		AccessList: ethtypes.AccessList{}, // AccessList
+		SkipAccountChecks: !commit,               // isFake
+	}
 
 	res, err := k.ApplyMessage(ctx, msg, types.NewNoOpTracer(), commit)
 	if err != nil {
