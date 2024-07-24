@@ -102,17 +102,17 @@ func (tf *IntegrationTxFactory) GenerateGethCoreMsg(
 ) (core.Message, error) {
 	msg, err := tf.GenerateMsgEthereumTx(privKey, txArgs)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to generate ethereum tx")
+		return core.Message{}, errorsmod.Wrap(err, "failed to generate ethereum tx")
 	}
 
 	signedMsg, err := tf.SignMsgEthereumTx(privKey, msg)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to sign ethereum tx")
+		return core.Message{}, errorsmod.Wrap(err, "failed to sign ethereum tx")
 	}
 
 	baseFeeResp, err := tf.grpcHandler.GetBaseFee()
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to get base fee")
+		return core.Message{}, errorsmod.Wrap(err, "failed to get base fee")
 	}
 	signer := gethtypes.LatestSignerForChainID(
 		tf.network.GetEIP155ChainID(),
