@@ -25,11 +25,11 @@ func CanTransfer(
 	params evmtypes.Params,
 	isLondon bool,
 ) error {
-	if isLondon && msg.GasFeeCap().Cmp(baseFee) < 0 {
+	if isLondon && msg.GasFeeCap.Cmp(baseFee) < 0 {
 		return errorsmod.Wrapf(
 			errortypes.ErrInsufficientFee,
 			"max fee per gas less than block base fee (%s < %s)",
-			msg.GasFeeCap(), baseFee,
+			msg.GasFeeCap, baseFee,
 		)
 	}
 
@@ -46,12 +46,12 @@ func CanTransfer(
 
 	// check that caller has enough balance to cover asset transfer for **topmost** call
 	// NOTE: here the gas consumed is from the context with the infinite gas meter
-	if msg.Value().Sign() > 0 && !evm.Context.CanTransfer(stateDB, msg.From(), msg.Value()) {
+	if msg.Value.Sign() > 0 && !evm.Context.CanTransfer(stateDB, msg.From, msg.Value) {
 		return errorsmod.Wrapf(
 			errortypes.ErrInsufficientFunds,
 			"failed to transfer %s from address %s using the EVM block context transfer function",
-			msg.Value(),
-			msg.From(),
+			msg.Value,
+			msg.From,
 		)
 	}
 
