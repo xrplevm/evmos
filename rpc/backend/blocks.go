@@ -53,6 +53,7 @@ func (b *Backend) BlockNumber() (hexutil.Uint64, error) {
 }
 
 // BlockTime returns the current block time. 
+// TODO: Review this
 func (b *Backend) BlockTime() (uint64, error) {
 	header, err := b.CurrentHeader()
 	if err != nil {
