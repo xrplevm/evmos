@@ -268,6 +268,7 @@ func (suite *KeeperTestSuite) TestGetEthIntrinsicGas() {
 			m, err := newNativeMessage(
 				nonce,
 				suite.ctx.BlockHeight(),
+				uint64(suite.ctx.BlockTime().Unix()),
 				suite.address,
 				ethCfg,
 				suite.signer,
@@ -711,7 +712,7 @@ func (suite *KeeperTestSuite) createContractGethMsg(nonce uint64, signer ethtype
 		return nil, err
 	}
 
-	msgSigner := ethtypes.MakeSigner(cfg, big.NewInt(suite.ctx.BlockHeight()))
+	msgSigner := ethtypes.MakeSigner(cfg, big.NewInt(suite.ctx.BlockHeight()), uint64(suite.ctx.BlockTime().Unix()))
 	return ethMsg.AsMessage(msgSigner, nil)
 }
 

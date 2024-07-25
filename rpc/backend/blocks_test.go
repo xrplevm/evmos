@@ -80,6 +80,10 @@ func (suite *BackendTestSuite) TestBlockNumber() {
 	}
 }
 
+func (suite *BackendTestSuite) TestBlockTime() {
+	
+}
+
 func (suite *BackendTestSuite) TestGetBlockByNumber() {
 	var (
 		blockRes *tmrpctypes.ResultBlockResults
