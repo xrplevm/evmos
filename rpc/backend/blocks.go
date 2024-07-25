@@ -52,6 +52,15 @@ func (b *Backend) BlockNumber() (hexutil.Uint64, error) {
 	return hexutil.Uint64(height), nil
 }
 
+// BlockTime returns the current block time. 
+func (b *Backend) BlockTime() (uint64, error) {
+	header, err := b.CurrentHeader()
+	if err != nil {
+		return 0, fmt.Errorf("failed to fetch current header: %w", err)
+	}
+	return header.Time, nil
+}
+
 // GetBlockByNumber returns the JSON-RPC compatible Ethereum block identified by
 // block number. Depending on fullTx it either returns the full transaction
 // objects or if false only the hashes of the transactions.
@@ -513,3 +522,4 @@ func (b *Backend) EthBlockFromTendermintBlock(
 	ethBlock := ethtypes.NewBlock(ethHeader, txs, nil, nil, trie.NewStackTrie(nil))
 	return ethBlock, nil
 }
+
