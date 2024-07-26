@@ -84,7 +84,8 @@ func NewMonoDecoratorUtils(
 	chainCfg := evmParams.GetChainConfig()
 	ethCfg := chainCfg.EthereumConfig(ek.ChainID())
 	blockHeight := big.NewInt(ctx.BlockHeight())
-	rules := ethCfg.Rules(blockHeight, true)
+	blockTime := uint64(ctx.BlockTime().Unix())
+	rules := ethCfg.Rules(blockHeight, true, blockTime)
 	baseFee := ek.GetBaseFee(ctx, ethCfg)
 	feeMarketParams := fmk.GetParams(ctx)
 
