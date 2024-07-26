@@ -112,7 +112,7 @@ func NewEVM(blockCtx BlockContext, txCtx TxContext, statedb StateDB, chainConfig
 		StateDB:     statedb,
 		Config:      config,
 		chainConfig: chainConfig,
-		chainRules:  chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil),
+		chainRules:  chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil, blockCtx.Time.Uint64()),
 		hooks:       newNoopOpCodeHooks(),
 	}
 	// set the default precompiles
@@ -132,7 +132,7 @@ func NewEVMWithHooks(hooks OpCodeHooks, blockCtx BlockContext, txCtx TxContext, 
 		StateDB:     statedb,
 		Config:      config,
 		chainConfig: chainConfig,
-		chainRules:  chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil),
+		chainRules:  chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil, blockCtx.Time.Uint64()),
 		hooks:       hooks,
 	}
 	// set the default precompiles
