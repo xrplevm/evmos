@@ -250,6 +250,7 @@ func (md MonoDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, ne
 			decUtils.Rules.IsHomestead,
 			decUtils.Rules.IsIstanbul,
 			ctx.IsCheckTx(),
+			decUtils.Rules.IsShanghai,
 		)
 		if err != nil {
 			return ctx, err
