@@ -23,6 +23,6 @@ func NewMigrator(keeper Keeper, legacySubspace types.Subspace) Migrator {
 }
 
 // Migrate6to7 migrates the store from consensus version 6 to 7.
-func (m Migrator) Migrate6to7(ctx sdk.Context) error {
+func (m Migrator) Migrate5to7(ctx sdk.Context) error {
 	return v7.MigrateStore(ctx, m.keeper.storeKey, m.keeper.cdc)
 }
