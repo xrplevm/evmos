@@ -7,13 +7,13 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
-
 	evmante "github.com/evmos/evmos/v19/app/ante/evm"
 	anteutils "github.com/evmos/evmos/v19/app/ante/utils"
 	evmtypes "github.com/evmos/evmos/v19/x/evm/types"
@@ -36,6 +36,8 @@ type HandlerOptions struct {
 	SigGasConsumer         func(meter storetypes.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
 	MaxTxGasWanted         uint64
 	TxFeeChecker           ante.TxFeeChecker
+	ExtraDecorator         sdk.AnteDecorator
+	AuthzDisabledMsgTypes  []string
 }
 
 // Validate checks if the keepers are defined
