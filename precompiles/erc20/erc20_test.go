@@ -26,6 +26,9 @@ func (s *PrecompileTestSuite) TestIsTransaction() {
 	s.Require().True(s.precompile.IsTransaction(auth.DecreaseAllowanceMethod))
 	s.Require().True(s.precompile.IsTransaction(erc20.TransferMethod))
 	s.Require().True(s.precompile.IsTransaction(erc20.TransferFromMethod))
+	s.Require().True(s.precompile.IsTransaction(erc20.MintMethod))
+	s.Require().True(s.precompile.IsTransaction(erc20.BurnMethod))
+	s.Require().True(s.precompile.IsTransaction(erc20.TransferOwnershipMethod))
 }
 
 func (s *PrecompileTestSuite) TestRequiredGas() {
@@ -136,6 +139,33 @@ func (s *PrecompileTestSuite) TestRequiredGas() {
 			expGas: erc20.GasAllowance,
 		},
 		{
+			name: erc20.MintMethod,
+			malleate: func() []byte {
+				bz, err := s.precompile.ABI.Pack(erc20.MintMethod, s.keyring.GetAddr(0), big.NewInt(1))
+				s.Require().NoError(err, "expected no error packing ABI")
+				return bz
+			},
+			expGas: erc20.GasMint,
+		},
+		{
+			name: erc20.BurnMethod,
+			malleate: func() []byte {
+				bz, err := s.precompile.ABI.Pack(erc20.BurnMethod, big.NewInt(1))
+				s.Require().NoError(err, "expected no error packing ABI")
+				return bz
+			},
+			expGas: erc20.GasBurn,
+		},
+		{
+			name: erc20.TransferOwnershipMethod,
+			malleate: func() []byte {
+				bz, err := s.precompile.ABI.Pack(erc20.TransferOwnershipMethod, s.keyring.GetAddr(0))
+				s.Require().NoError(err, "expected no error packing ABI")
+				return bz
+			},
+			expGas: erc20.GasTransferOwnership,
+		},
+		{
 			name: "invalid method",
 			malleate: func() []byte {
 				return []byte("invalid method")
@@ -153,8 +183,6 @@ func (s *PrecompileTestSuite) TestRequiredGas() {
 
 	for _, tc := range testcases {
 		s.Run(tc.name, func() {
-			tc := tc
-
 			input := tc.malleate()
 
 			s.Require().Equal(tc.expGas, s.precompile.RequiredGas(input))
