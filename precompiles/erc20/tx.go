@@ -14,9 +14,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	cmn "github.com/evmos/evmos/v20/precompiles/common"
+	"github.com/evmos/evmos/v20/utils"
 	"github.com/evmos/evmos/v20/x/erc20/types"
 	"github.com/evmos/evmos/v20/x/evm/core/vm"
-	evmtypes "github.com/evmos/evmos/v20/x/evm/types"
 )
 
 const (
@@ -176,11 +176,12 @@ func (p *Precompile) Mint(
 		return nil, ConvertErrToERC20Error(err)
 	}
 
-	if p.tokenPair.Denom == evmtypes.GetEVMCoinDenom() {
+	// TODO: where should we get this
+	if p.tokenPair.Denom == utils.BaseDenom {
 		p.SetBalanceChangeEntries(
-			cmn.NewBalanceChangeEntry(to, coins.AmountOf(evmtypes.GetEVMCoinDenom()).BigInt(), cmn.Add))
+			cmn.NewBalanceChangeEntry(minterAddr, coins.AmountOf(utils.BaseDenom).BigInt(), cmn.Sub),
+		)
 	}
-
 	if err = p.EmitTransferEvent(ctx, stateDB, ZeroAddress, to, amount); err != nil {
 		return nil, err
 	}
@@ -211,11 +212,12 @@ func (p *Precompile) Burn(
 		return nil, ConvertErrToERC20Error(err)
 	}
 
-	if p.tokenPair.Denom == evmtypes.GetEVMCoinDenom() {
+	// TODO: where should we get this
+	if p.tokenPair.Denom == utils.BaseDenom {
 		p.SetBalanceChangeEntries(
-			cmn.NewBalanceChangeEntry(burnerAddr, coins.AmountOf(evmtypes.GetEVMCoinDenom()).BigInt(), cmn.Sub))
+			cmn.NewBalanceChangeEntry(burnerAddr, coins.AmountOf(utils.BaseDenom).BigInt(), cmn.Sub),
+		)
 	}
-
 	if err = p.EmitTransferEvent(ctx, stateDB, burnerAddr, ZeroAddress, amount); err != nil {
 		return nil, err
 	}
