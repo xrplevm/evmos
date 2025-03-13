@@ -189,7 +189,7 @@ func (p *Precompile) Mint(
 	// TODO: where should we get this
 	if p.tokenPair.Denom == utils.BaseDenom {
 		p.SetBalanceChangeEntries(
-			cmn.NewBalanceChangeEntry(minterAddr, coins.AmountOf(utils.BaseDenom).BigInt(), cmn.Sub),
+			cmn.NewBalanceChangeEntry(minterAddr, coins.AmountOf(utils.BaseDenom).BigInt(), cmn.Add),
 		)
 	}
 	if err = p.EmitTransferEvent(ctx, stateDB, ZeroAddress, to, amount); err != nil {
