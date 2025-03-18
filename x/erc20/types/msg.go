@@ -140,12 +140,6 @@ func (m MsgTransferOwnership) GetSignBytes() []byte {
 	return sdk.MustSortJSON(AminoCdc.MustMarshalJSON(&m))
 }
 
-// GetSigners returns the expected signers for a MsgTransferOwnership message.
-func (m MsgTransferOwnership) GetSigners() []sdk.AccAddress {
-	addr := sdk.MustAccAddressFromBech32(m.Authority)
-	return []sdk.AccAddress{addr}
-}
-
 // ValidateBasic does a sanity check of the provided data
 func (m MsgMint) ValidateBasic() error {
 	if !common.IsHexAddress(m.ContractAddress) {
@@ -172,12 +166,6 @@ func (m MsgMint) Route() string { return RouterKey }
 
 // Type returns the message type for a MsgMint
 func (m MsgMint) Type() string { return TypeMsgMint }
-
-// GetSigners returns the expected signers for a MsgBurn message.
-func (m MsgBurn) GetSigners() []sdk.AccAddress {
-	addr := sdk.MustAccAddressFromBech32(m.Sender)
-	return []sdk.AccAddress{addr}
-}
 
 // ValidateBasic does a sanity check of the provided data
 func (m MsgBurn) ValidateBasic() error {
