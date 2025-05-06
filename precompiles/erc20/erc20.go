@@ -25,7 +25,7 @@ const (
 	// abiPath defines the path to the ERC-20 precompile ABI JSON file.
 	abiPath = "abi.json"
 
-	GasTransfer          = 3_000_000
+	GasTransfer          = 100_000 
 	GasApprove           = 30_956
 	GasIncreaseAllowance = 34_605
 	GasDecreaseAllowance = 34_519
