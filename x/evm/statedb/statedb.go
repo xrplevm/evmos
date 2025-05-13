@@ -545,3 +545,13 @@ func (s *StateDB) commitWithCtx(ctx sdk.Context) error {
 	}
 	return nil
 }
+
+func (s *StateDB) RevertMultiStore(cms storetypes.CacheMultiStore, events sdk.Events) {
+	s.cacheCtx = s.cacheCtx.WithMultiStore(cms)
+	s.writeCache = func() {
+		// rollback the events to the ones
+		// on the snapshot
+		s.ctx.EventManager().EmitEvents(events)
+		cms.Write()
+	}
+}
