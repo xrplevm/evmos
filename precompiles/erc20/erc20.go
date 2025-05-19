@@ -25,7 +25,7 @@ const (
 	// abiPath defines the path to the ERC-20 precompile ABI JSON file.
 	abiPath = "abi.json"
 
-	GasTransfer          = 3_000_000
+	GasTransfer          = 100_000
 	GasApprove           = 30_956
 	GasIncreaseAllowance = 34_605
 	GasDecreaseAllowance = 34_519
@@ -151,21 +151,23 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 	// This handles any out of gas errors that may occur during the execution of a precompile tx or query.
 	// It avoids panics and returns the out of gas error so the EVM can continue gracefully.
-	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
-	bz, err = p.HandleMethod(ctx, contract, stateDB, method, args)
-	if err != nil {
-		return nil, err
-	}
+	defer cmn.HandleGasError(ctx, contract, initialGas, &err, stateDB, snapshot)()
+	return p.RunAtomic(snapshot, stateDB, func() ([]byte, error) {
+		bz, err = p.HandleMethod(ctx, contract, stateDB, method, args)
+		if err != nil {
+			return nil, err
+		}
 
-	cost := ctx.GasMeter().GasConsumed() - initialGas
+		cost := ctx.GasMeter().GasConsumed() - initialGas
 
-	if !contract.UseGas(cost) {
-		return nil, vm.ErrOutOfGas
-	}
-	if err := p.AddJournalEntries(stateDB, snapshot); err != nil {
-		return nil, err
-	}
-	return bz, nil
+		if !contract.UseGas(cost) {
+			return nil, vm.ErrOutOfGas
+		}
+		if err := p.AddJournalEntries(stateDB, snapshot); err != nil {
+			return nil, err
+		}
+		return bz, nil
+	})
 }
 
 // IsTransaction checks if the given method name corresponds to a transaction or query.
