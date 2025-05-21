@@ -184,7 +184,12 @@ func (b *Backend) TendermintBlockByNumber(blockNum rpctypes.BlockNumber) (*tmrpc
 // TendermintBlockResultByNumber returns a Tendermint-formatted block result
 // by block number
 func (b *Backend) TendermintBlockResultByNumber(height *int64) (*tmrpctypes.ResultBlockResults, error) {
-	return b.rpcClient.BlockResults(b.ctx, height)
+	res, err := b.rpcClient.BlockResults(b.ctx, height)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch block result from Tendermint %d: %w", *height, err)
+	}
+
+	return res, nil
 }
 
 // TendermintBlockByHash returns a Tendermint-formatted block by block number
@@ -196,8 +201,8 @@ func (b *Backend) TendermintBlockByHash(blockHash common.Hash) (*tmrpctypes.Resu
 	}
 
 	if resBlock == nil || resBlock.Block == nil {
-		b.logger.Debug("TendermintBlockByHash block not found", "blockHash", blockHash.Hex())
-		return nil, nil
+		b.logger.Error("tendermint block not found", "blockHash", blockHash.Hex())
+		return nil, fmt.Errorf("block not found for hash %s", blockHash.Hex())
 	}
 
 	return resBlock, nil
